@@ -5,7 +5,3 @@ Analysis of the FCS/FCG food security indicator provided by WFP. More detail to 
 
 - shape_files: folder containing the shapefiles of three countries (Yemen, Guinea, Zambia). These data are released by OCHA (The Humanitarian Data Exchange): https://data.humdata.org/
 
-**
-
-**
-
