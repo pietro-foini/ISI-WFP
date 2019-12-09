@@ -13,6 +13,6 @@ The second part of the work consists of integrating additional data sources that
 
 The main structure with which the files are stored are the following:
 
-- Food Consumption Score: analyisis of the FCS indicator.
+- Food Consumption Score: analysis of the FCS indicator.
 
 - Reduced Coping Strategy Index: analysis of the rCSI indicator.
