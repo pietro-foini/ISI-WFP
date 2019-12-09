@@ -5,3 +5,4 @@ Analysis of the rCSI food security indicator provided by WFP. More detail to htt
 
 - shape_files: folder containing the shapefiles of three countries (Yemen, Guinea, Zambia). These data are released by OCHA (The Humanitarian Data Exchange): https://data.humdata.org/
 
+- CSI.pdf: technical guidance sheet for the CSI indicators.
