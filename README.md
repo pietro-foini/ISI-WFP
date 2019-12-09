@@ -11,7 +11,7 @@ The second part of the work consists of integrating additional data sources that
 
 ## Folder structure
 
-The main structure with which the files are stored are the following:
+The main structure with which the files are stored is the following:
 
 - Food Consumption Score: analysis of the FCS indicator.
 
