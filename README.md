@@ -3,4 +3,4 @@
 ## Overview
 
 
-## Purpose of the Project
+## Folder structure
