@@ -1,0 +1,7 @@
+# Don't track content of these folders.
+prove/
+
+
+# Compiled source #
+###################
+*.ipynb_checkpoints
