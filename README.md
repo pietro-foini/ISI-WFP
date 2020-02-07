@@ -14,3 +14,5 @@ The second part of the work will consist of integrating additional data sources 
 The main structure with which the files are stored is the following:
 
 - Demo: the demo version (using demo data) of the project.
+
+- Complete: the full version of the data.
