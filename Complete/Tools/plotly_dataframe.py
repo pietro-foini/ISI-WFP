@@ -201,12 +201,13 @@ def plot(df, title = None, yaxis = None, style = "lines", first_last_valid_index
             else:
                 # Create figure.
                 w1 = widgets.Dropdown(options = df.columns.get_level_values(0).unique(), description = "Country:", 
-                                      disabled = False)
+                                      disabled = False, value = None)
                 w2 = widgets.Dropdown(description = "Adminstrata:", disabled = False)
 
                 # Define a function that updates the content of w2 based on what we select for w1.
                 def update(*args):
-                    w2.options = df[w1.value].columns.get_level_values(0).unique()
+                    if w1.value:
+                        w2.options = df[w1.value].columns.get_level_values(0).unique()
                 w1.observe(update)
                   
                 w3 = widgets.RadioButtons(options = ["Time-series", "Missing values"], description = "Select:", disabled = False)
@@ -216,14 +217,15 @@ def plot(df, title = None, yaxis = None, style = "lines", first_last_valid_index
         elif len(df.columns.levels) == 4:
                 # Create figure.
                 w1 = widgets.Dropdown(options = df.columns.get_level_values(0).unique(), description = "Country:", 
-                                      disabled = False)
+                                      disabled = False, value = None)
                 w2 = widgets.Dropdown(description = "Adminstrata:", disabled = False)
                 w3 = widgets.Dropdown(description = "Food Group:", disabled = False)
 
                 # Define a function that updates the content of w2 based on what we select for w1.
                 def update(*args):
-                    w2.options = df[w1.value].columns.get_level_values(0).unique()
-                    w3.options = df[w1.value][w2.value].columns.get_level_values(0).unique()
+                    if w1.value:
+                        w2.options = df[w1.value].columns.get_level_values(0).unique()
+                        w3.options = df[w1.value][w2.value].columns.get_level_values(0).unique()
                 w1.observe(update)
                   
                 w4 = widgets.RadioButtons(options = ["Time-series", "Missing values"], description = "Select:", disabled = False)
@@ -282,7 +284,7 @@ def plot_comparison(df1, df2, title = None, yaxis = None, first_last_valid_index
 def plot_hist(df, title = None, yaxis = None):
     
     def sub_plot_hist(name1, name2, df):
-        if name1 != None and name1 != "" and name2 != None and name2 in df[name1].columns.get_level_values(0).unique():  
+        if name1 != None and name2 != None and name2 in df[name1].columns.get_level_values(0).unique():  
             df = df.droplevel(level = 2, axis = 1)
             group = df[name1][name2]
             group = group.dropna()
@@ -309,16 +311,15 @@ def plot_hist(df, title = None, yaxis = None):
     # Create figure.
     columns0 = list(df.columns.get_level_values(0).unique())
     columns0.insert(0, "")
-    w1 = widgets.Dropdown(options = columns0, description = "Country:", disabled = False)
+    w1 = widgets.Dropdown(options = columns0, description = "Country:", disabled = False, value = None)
     w2 = widgets.Dropdown(description = "Adminstrata:", disabled = False)
 
     # Define a function that updates the content of w2 based on what we select for w1.
     def update(*args):
-        if w1.value != "":
+        if w1.value:
             w2.options = df[w1.value].columns.get_level_values(0).unique()
     w1.observe(update)
 
     hbox = widgets.HBox([w1, w2])
     out = widgets.interactive_output(sub_plot_hist, {"name1": w1, "name2": w2, "df": fixed(df)})
     display(hbox, out)
-    
