@@ -219,7 +219,7 @@ def plot(df, title = None, yaxis = None, style = "lines", first_last_valid_index
                 w1 = widgets.Dropdown(options = df.columns.get_level_values(0).unique(), description = "Country:", 
                                       disabled = False, value = None)
                 w2 = widgets.Dropdown(description = "Adminstrata:", disabled = False)
-                w3 = widgets.Dropdown(description = "Food Group:", disabled = False)
+                w3 = widgets.Dropdown(description = "Group:", disabled = False)
 
                 # Define a function that updates the content of w2 based on what we select for w1.
                 def update(*args):
@@ -309,9 +309,7 @@ def plot_hist(df, title = None, yaxis = None):
             pass
 
     # Create figure.
-    columns0 = list(df.columns.get_level_values(0).unique())
-    columns0.insert(0, "")
-    w1 = widgets.Dropdown(options = columns0, description = "Country:", disabled = False, value = None)
+    w1 = widgets.Dropdown(options = df.columns.get_level_values(0).unique(), description = "Country:", disabled = False, value = None)
     w2 = widgets.Dropdown(description = "Adminstrata:", disabled = False)
 
     # Define a function that updates the content of w2 based on what we select for w1.
