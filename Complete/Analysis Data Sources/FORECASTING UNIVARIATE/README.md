@@ -21,15 +21,20 @@ All this models are implemented to forecast a desired amount of future points h 
 
 In order to tune the hyperparameters (grid search analysis) and to compute the generalisation error to compare model performances, we present some basic metrics adopted to evaluate the forecast error. The most common metrics are the following denoting with <img src="https://render.githubusercontent.com/render/math?math=z_t"> the actual value observed and with <img src="https://render.githubusercontent.com/render/math?math=\hat{z}_t"> the predicted value (for all these metrics lower values correspond to a better predictive performance for an algorithm):
 
-- *MSE*:
+- Mean Squared Error (MSE):
 
 <img src="https://render.githubusercontent.com/render/math?math=MSE = \frac{1}{h} \sum_{t = 1}^{h} (z_t - \hat{z}_t)^2">
 
-- *TU*:
+- Theil's U (TU) coefficient:
 
-$$TU = \frac{\sum_{t = 1}^{h} (z_t - \hat{z}_t)^2}{\sum_{t = 1}^{h} (z_t - z_{t-1})^2}$$
+<img src="https://render.githubusercontent.com/render/math?math=TU = \frac{\sum_{t = 1}^{h} (z_t - \hat{z}_t)^2}{\sum_{t = 1}^{h} (z_t - z_{t-1})^2}">
 
-- *ER*:
+- Error Rate (ER):
+
+<img src="https://render.githubusercontent.com/render/math?math=POCID = \frac{\sum_{t = 1}^{h} D_t}{h} \cdot 100 \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ D_t = \begin{cases}
+      1 & \text{if $(\hat{z}_t - \hat{z}_{t - 1})(z_t - z_{t-1}) > 0$}\\
+      0 & \text{otherwise}
+    \end{cases}      ">
 
 $$POCID = \frac{\sum_{t = 1}^{h} D_t}{h} \cdot 100 \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ D_t = \begin{cases}
       1 & \text{if $(\hat{z}_t - \hat{z}_{t - 1})(z_t - z_{t-1}) > 0$}\\
