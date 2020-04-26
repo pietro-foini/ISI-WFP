@@ -14,6 +14,9 @@ We explore several univariate forecasting algorithms (some created using python 
 - Autoregressive Integrated Moving Average (ARIMA) [-p];
 - kNN-TSPI [-h];
 - Support Vector Machine (SVM) [-p];
+- MLP [-p];
+- LSTM [-p];
+- CNN-LSTM [-p];
 
 All this models are implemented to forecast a desired amount of future points h (prediction horizon) in a recursive (or similar) way. This means that the models are provided for the needing to predict h points ahead in time starting "today"!
 
@@ -55,11 +58,11 @@ As mentioned, an important consideration regarding the search of the best foreca
 
 <img src="./images/val_holdout.gif" width="700">
 
-- K-fold cross validation:
+- K-fold cross validation (an example of a FCS time-serie with 3 folds):
 
 <img src="./images/val_k_fold.gif" width="700">
 
-- K-fold cross validation (sklearn approach):
+- K-fold cross validation (sklearn approach) (an example of a FCS time-serie with 3 folds):
 
 <img src="./images/val_k_fold_sklearn.gif" width="700">
 
