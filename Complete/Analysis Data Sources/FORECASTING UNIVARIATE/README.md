@@ -19,6 +19,8 @@ All this models are implemented to forecast a desired amount of future points h 
 
 [1] ["Evaluation of statistical and machine learning models for time series prediction: Identifying the state-of-the-art and the best conditions for the use of each model"](https://www.sciencedirect.com/science/article/pii/S0020025519300945), Antonio Rafael Sabino Parmezan, Vinicius M.A. Souza, Gustavo E.A .P.A . Batista.
 
+## Basic metrics
+
 In order to tune the hyperparameters (grid search analysis) and to compute the generalisation error to compare model performances, we present some basic metrics adopted to evaluate the forecast error. The most common metrics are the following denoting with <img src="https://render.githubusercontent.com/render/math?math=z_t"> the actual value observed and with <img src="https://render.githubusercontent.com/render/math?math=\hat{z}_t"> the predicted value (for all these metrics lower values correspond to a better predictive performance for an algorithm):
 
 - Mean Squared Error (MSE):
@@ -33,7 +35,7 @@ In order to tune the hyperparameters (grid search analysis) and to compute the g
 
 <img src="https://render.githubusercontent.com/render/math?math=POCID = \frac{\sum_{t = 1}^{h} D_t}{h} \cdot 100">
 
-where: <img src="https://render.githubusercontent.com/render/math?math=D_t = 1 & \text{if $(\hat{z}_t - \hat{z}_{t - 1})(z_t - z_{t-1}) > 0"> & <img src="https://render.githubusercontent.com/render/math?math=D_t = 0 & \text{otherwise}">
+where: <img src="https://render.githubusercontent.com/render/math?math=D_t = 1"> if <img src="https://render.githubusercontent.com/render/math?math=(\hat{z}_t - \hat{z}_{t - 1})(z_t - z_{t-1}) > 0"> & <img src="https://render.githubusercontent.com/render/math?math=D_t = 0"> otherwise.
 
 <img src="https://render.githubusercontent.com/render/math?math=ER = 100 - POCID">
 
