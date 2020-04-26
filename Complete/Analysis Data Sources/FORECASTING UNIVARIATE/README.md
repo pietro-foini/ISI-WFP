@@ -15,9 +15,34 @@ We explore several univariate forecasting algorithms (some created using python 
 - kNN-TSPI [-h];
 - Support Vector Machine (SVM) [-p];
 
+All this models are implemented to forecast a desired amount of future points h (prediction horizon) in a recursive (or similar) way. This means that the models are provided for the needing to predict h points ahead in time starting "today"!
+
 [1] ["Evaluation of statistical and machine learning models for time series prediction: Identifying the state-of-the-art and the best conditions for the use of each model"](https://www.sciencedirect.com/science/article/pii/S0020025519300945), Antonio Rafael Sabino Parmezan, Vinicius M.A. Souza, Gustavo E.A .P.A . Batista.
 
 In order to tune the hyperparameters (grid search analysis) and to compute the generalisation error to compare model performances, we present some basic metrics adopted to evaluate the forecast error. The most common metrics are the following denoting with <img src="https://render.githubusercontent.com/render/math?math=z_t"> the actual value observed and with <img src="https://render.githubusercontent.com/render/math?math=\hat{z}_t"> the predicted value (for all these metrics lower values correspond to a better predictive performance for an algorithm):
 
+- *MSE*:
 
+<img src="https://render.githubusercontent.com/render/math?math=MSE = \frac{1}{h} \sum_{t = 1}^{h} (z_t - \hat{z}_t)^2">
+
+- *TU*:
+
+$$TU = \frac{\sum_{t = 1}^{h} (z_t - \hat{z}_t)^2}{\sum_{t = 1}^{h} (z_t - z_{t-1})^2}$$
+
+- *ER*:
+
+$$POCID = \frac{\sum_{t = 1}^{h} D_t}{h} \cdot 100 \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ D_t = \begin{cases}
+      1 & \text{if $(\hat{z}_t - \hat{z}_{t - 1})(z_t - z_{t-1}) > 0$}\\
+      0 & \text{otherwise}
+    \end{cases}      $$
+
+$$ER = 100 - POCID$$
+
+- *MAPE*:
+
+$$MAPE = \frac{1}{h} \sum_{t = 1}^{h} |\frac{(z_t - \hat{z}_t)^2}{z_t}| \cdot 100$$
+
+- *Multi-Criteria Performance Measure (MCPM)*: 
+
+<img src="./images/MCPM.png" width="300">
 
