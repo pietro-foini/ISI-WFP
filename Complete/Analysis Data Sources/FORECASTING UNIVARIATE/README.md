@@ -53,6 +53,7 @@ As mentioned, an important consideration regarding the search of the best foreca
 
 - Holdout validation:
 
+<img src="./images/val_holdout.gif" width="700">
 
 - K-fold cross validation:
 
@@ -60,9 +61,9 @@ As mentioned, an important consideration regarding the search of the best foreca
 
 - K-fold cross validation (sklearn approach):
 
+<img src="./images/val_k_fold_sklearn.gif" width="700">
 
-
-
+N.B. these time-series examples doesn't have the test part that which has already been previously excluded!
 
 
 
