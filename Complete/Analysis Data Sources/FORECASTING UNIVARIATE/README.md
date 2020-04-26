@@ -17,7 +17,7 @@ We explore several univariate forecasting algorithms (some created using python 
 
 [1] ["Evaluation of statistical and machine learning models for time series prediction: Identifying the state-of-the-art and the best conditions for the use of each model"](https://www.sciencedirect.com/science/article/pii/S0020025519300945), Antonio Rafael Sabino Parmezan, Vinicius M.A. Souza, Gustavo E.A .P.A . Batista.
 
-In order to tune the hyperparameters (grid search analysis) and to compute the generalisation error to compare model performances, we present some basic metrics adopted to evaluate the forecast error. The most common metrics are the following denoting with $z_t$ the actual value observed and with $\hat{z}_t$ the predicted value (for all these metrics lower values correspond to a better predictive performance for an algorithm):
+In order to tune the hyperparameters (grid search analysis) and to compute the generalisation error to compare model performances, we present some basic metrics adopted to evaluate the forecast error. The most common metrics are the following denoting with <img src="https://render.githubusercontent.com/render/math?math=z_t"> the actual value observed and with $\hat{z}_t$ the predicted value (for all these metrics lower values correspond to a better predictive performance for an algorithm):
 
 <img src="https://render.githubusercontent.com/render/math?math=e^{i \pi} = -1">
 
