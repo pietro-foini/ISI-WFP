@@ -47,8 +47,19 @@ where: <img src="https://render.githubusercontent.com/render/math?math=D_t = 1">
 
 <img src="./images/MCPM.png" width="300">
 
+## Evaluation protocols
 
 As mentioned, an important consideration regarding the search of the best forecast algorithm is the selection of the best techniques for parameter estimation. In fact, one of the main difficulties faced by researchers in the time-series prediction is the search for the best parameter setting to fit a model according to a dataset. Next, we present the main parameter estimation methods for time-series prediction used in this section:
+
+- Holdout validation:
+
+
+- K-fold cross validation:
+
+<img src="./images/val_k_fold.gif" width="700">
+
+- K-fold cross validation (sklearn approach):
+
 
 
 
