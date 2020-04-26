@@ -4,7 +4,7 @@ In this part of forecast analysis, we only consider univariate time-series: if w
 
 We explore several univariate forecasting algorithms (some created using python packages already implemented (we'll denote these models with [-p]) and other built by hand [-h]):
 
-- Naive mode;
+- Naive mode [-h];
 - Simple Moving Average model (SMA) [-h];
 - Simple Exponential Smoothing (SES) [-h];
 - Holt's Exponential Smoothing (HES) [-h];
@@ -31,23 +31,32 @@ In order to tune the hyperparameters (grid search analysis) and to compute the g
 
 - Error Rate (ER):
 
-<img src="https://render.githubusercontent.com/render/math?math=POCID = \frac{\sum_{t = 1}^{h} D_t}{h} \cdot 100 \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ D_t = \begin{cases}
-      1 & \text{if $(\hat{z}_t - \hat{z}_{t - 1})(z_t - z_{t-1}) > 0$}\\
-      0 & \text{otherwise}
-    \end{cases}      ">
+<img src="https://render.githubusercontent.com/render/math?math=POCID = \frac{\sum_{t = 1}^{h} D_t}{h} \cdot 100">
 
-$$POCID = \frac{\sum_{t = 1}^{h} D_t}{h} \cdot 100 \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ D_t = \begin{cases}
-      1 & \text{if $(\hat{z}_t - \hat{z}_{t - 1})(z_t - z_{t-1}) > 0$}\\
-      0 & \text{otherwise}
-    \end{cases}      $$
+where: <img src="https://render.githubusercontent.com/render/math?math=D_t = 1 & \text{if $(\hat{z}_t - \hat{z}_{t - 1})(z_t - z_{t-1}) > 0"> & <img src="https://render.githubusercontent.com/render/math?math=D_t = 0 & \text{otherwise}">
 
-$$ER = 100 - POCID$$
+<img src="https://render.githubusercontent.com/render/math?math=ER = 100 - POCID">
 
-- *MAPE*:
+- Mean Absolute Percentage Error (MAPE):
 
-$$MAPE = \frac{1}{h} \sum_{t = 1}^{h} |\frac{(z_t - \hat{z}_t)^2}{z_t}| \cdot 100$$
+<img src="https://render.githubusercontent.com/render/math?math=MAPE = \frac{1}{h} \sum_{t = 1}^{h} |\frac{(z_t - \hat{z}_t)^2}{z_t}| \cdot 100">
 
-- *Multi-Criteria Performance Measure (MCPM)*: 
+- Multi-Criteria Performance Measure (MCPM): 
 
 <img src="./images/MCPM.png" width="300">
+
+
+As mentioned, an important consideration regarding the search of the best forecast algorithm is the selection of the best techniques for parameter estimation. In fact, one of the main difficulties faced by researchers in the time-series prediction is the search for the best parameter setting to fit a model according to a dataset. Next, we present the main parameter estimation methods for time-series prediction used in this section:
+
+
+
+
+
+
+
+
+
+
+
+
 
