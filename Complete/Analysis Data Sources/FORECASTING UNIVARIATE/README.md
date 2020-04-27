@@ -66,7 +66,7 @@ As mentioned, an important consideration regarding the search of the best foreca
 
 <img src="./images/val_k_fold_sklearn.gif" width="700">
 
-N.B. these time-series examples doesn't have the test part that which has already been previously excluded!
+N.B. these time-series examples doesn't have the test part that which has already been previously excluded! For the MLP, CNN and CNN-LSTM models an own validation approach is provided unlike the others.
 
 
 
