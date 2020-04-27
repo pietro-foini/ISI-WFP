@@ -4,7 +4,7 @@ import seaborn as sns
 from ipywidgets import interact, widgets, fixed
 from IPython.display import display
 
-# Plot dataframe with multi-columns (until to two multi-columns) using plotly.
+# Plot dataframe with multi-columns index using plotly.
 def plot(df, title = None, yaxis = None, style = "lines", first_last_valid_index_group = False):
     
     def subplot_level4(name1, name2, name3, graph, df):
@@ -164,14 +164,13 @@ def plot(df, title = None, yaxis = None, style = "lines", first_last_valid_index
             # Visualization of the missing values of the current time-series.
             miss = df.notnull().astype("int")
             fig = go.Figure(data = go.Heatmap(z = miss, zmin = 0, zmax = 1, x = miss.columns, y = miss.index, xgap = 3, 
-                                              colorscale = [[0, "white"], [1, "black"]], showscale = False, 
-                                              hoverinfo = "x+y"))
+                                              colorscale = [[0, "white"], [1, "black"]], showscale = False, hoverinfo = "x+y"))
             fig.show()
     
     # Check if dataframe not contains multi-columns.
     if not isinstance(df.columns, pd.core.index.MultiIndex):
         # Create figure.
-        w1 = widgets.RadioButtons(options = ["Time-series", "Missing values"], description = "Select", disabled = False)
+        w1 = widgets.RadioButtons(options = ["Time-series", "Missing values"], description = "Select:", disabled = False)
         p = interact(subplot_level1, graph = w1, df = fixed(df))
     else:
         # Check if dataframe has 2 levels of multi-columns.
@@ -179,30 +178,33 @@ def plot(df, title = None, yaxis = None, style = "lines", first_last_valid_index
             if len(df.columns.get_level_values(1).unique()) == 1:
                 df = df.droplevel(level = 1, axis = 1)
                 # Create figure.
-                w1 = widgets.RadioButtons(options = ["Time-series", "Missing values"], description = "Select", disabled = False)
+                w1 = widgets.RadioButtons(options = ["Time-series", "Missing values"], description = "Select:", disabled = False)
                 p = interact(subplot_level1, graph = w1, df = fixed(df))
             elif len(df.columns.get_level_values(0).unique()) == 1 and len(df.columns.get_level_values(1).unique()) != 1:
                 w1 = widgets.RadioButtons(options = ["Time-series", "Missing values"], description = "Select:", disabled = False)
                 p = interact(subplot_level2, name = fixed(df.columns.get_level_values(0).unique().values[0]), graph = w1, df = fixed(df))
             elif len(df.columns.get_level_values(0).unique()) != 1 and len(df.columns.get_level_values(1).unique()) != 1: 
                 # Create figure.
-                w1 = widgets.ToggleButtons(options = df.columns.get_level_values(0).unique(), description = df.columns.get_level_values(0).name, 
+                w1 = widgets.ToggleButtons(options = df.columns.get_level_values(0).unique(), 
+                                           description = df.columns.get_level_values(0).name, 
                                            disabled = False)
                 w2 = widgets.RadioButtons(options = ["Time-series", "Missing values"], description = "Select:", disabled = False)
                 p = interact(subplot_level2, name = w1, graph = w2, df = fixed(df))
+        # Check if dataframe has 3 levels of multi-columns.
         elif len(df.columns.levels) == 3:
             if len(df.columns.get_level_values(2).unique()) == 1:
                 df = df.droplevel(level = 2, axis = 1)
                 # Create figure.
-                w1 = widgets.ToggleButtons(options = df.columns.get_level_values(0).unique(), description = df.columns.get_level_values(0).name, 
+                w1 = widgets.ToggleButtons(options = df.columns.get_level_values(0).unique(), 
+                                           description = df.columns.get_level_values(0).name, 
                                            disabled = False)
                 w2 = widgets.RadioButtons(options = ["Time-series", "Missing values"], description = "Select:", disabled = False)
                 p = interact(subplot_level2, name = w1, graph = w2, df = fixed(df))
             else:
                 # Create figure.
-                w1 = widgets.Dropdown(options = df.columns.get_level_values(0).unique(), description = "Country:", 
+                w1 = widgets.Dropdown(options = df.columns.get_level_values(0).unique(), description = df.columns.get_level_values(0).name, 
                                       disabled = False, value = None)
-                w2 = widgets.Dropdown(description = "Adminstrata:", disabled = False)
+                w2 = widgets.Dropdown(description = df.columns.get_level_values(1).name, disabled = False)
 
                 # Define a function that updates the content of w2 based on what we select for w1.
                 def update(*args):
@@ -214,12 +216,13 @@ def plot(df, title = None, yaxis = None, style = "lines", first_last_valid_index
                 hbox = widgets.HBox([w1, w2])
                 out = widgets.interactive_output(subplot_level3, {"name1": w1, "name2": w2, "graph": w3, "df": fixed(df)})
                 display(hbox, w3, out)
+        # Check if dataframe has 4 levels of multi-columns.
         elif len(df.columns.levels) == 4:
                 # Create figure.
-                w1 = widgets.Dropdown(options = df.columns.get_level_values(0).unique(), description = "Country:", 
+                w1 = widgets.Dropdown(options = df.columns.get_level_values(0).unique(), description = df.columns.get_level_values(0).name, 
                                       disabled = False, value = None)
-                w2 = widgets.Dropdown(description = "Adminstrata:", disabled = False)
-                w3 = widgets.Dropdown(description = "Group:", disabled = False)
+                w2 = widgets.Dropdown(description = df.columns.get_level_values(1).name, disabled = False)
+                w3 = widgets.Dropdown(description = df.columns.get_level_values(2).name, disabled = False)
 
                 # Define a function that updates the content of w2 based on what we select for w1.
                 def update(*args):
@@ -278,7 +281,7 @@ def plot_comparison(df1, df2, title = None, yaxis = None, first_last_valid_index
 
         fig.show()
 
-    w = widgets.ToggleButtons(options = list(df1.columns.levels[0]), description = "Country:", disabled = False)
+    w = widgets.ToggleButtons(options = list(df1.columns.levels[0]), description = df1.columns.get_level_values(0).name, disabled = False)
     p = interact(sub_plot, country = w)
     
 def plot_hist(df, title = None, yaxis = None):
@@ -309,8 +312,9 @@ def plot_hist(df, title = None, yaxis = None):
             pass
 
     # Create figure.
-    w1 = widgets.Dropdown(options = df.columns.get_level_values(0).unique(), description = "Country:", disabled = False, value = None)
-    w2 = widgets.Dropdown(description = "Adminstrata:", disabled = False)
+    w1 = widgets.Dropdown(options = df.columns.get_level_values(0).unique(), description = df.columns.get_level_values(0).name, 
+                          disabled = False, value = None)
+    w2 = widgets.Dropdown(description = df.columns.get_level_values(1).name, disabled = False)
 
     # Define a function that updates the content of w2 based on what we select for w1.
     def update(*args):
