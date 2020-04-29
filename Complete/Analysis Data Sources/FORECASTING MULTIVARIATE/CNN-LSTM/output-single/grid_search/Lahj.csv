@@ -1,0 +1,2 @@
+n_seq,n_steps,n_epochs,batch_size,n_filters,n_kernels,n_nodes,optimizer,shuffle,loss
+3,10,1,8,64,3,50,adam,False,0
