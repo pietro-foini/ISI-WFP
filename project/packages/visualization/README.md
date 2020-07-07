@@ -8,6 +8,6 @@ The time-series are plotted using either the *matplotlib* library or the *plotly
 
 1. Supposing to have a dataframe `df` with a single level on axis 1 (we show only the first 5 rows):
 
-<img src="./images/level1.png" width="300">
+<img src="./images/level1.png" width="800">
 
 bla bla
