@@ -14,4 +14,4 @@ Using the TsIP library, we can easily visualize all the time-series with a simpl
 
 <img src="./images/level1.gif" width="800">
 
-N.B. If `matplotlib = False`, the time-series are visualized using the plotly library which as you can see is much more engaging. The 
+N.B. If `matplotlib = False`, the time-series are visualized using the plotly library which as you can see is much more engaging.  
