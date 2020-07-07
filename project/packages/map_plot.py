@@ -3,6 +3,13 @@ import geopandas as gpd
 import numpy as np
 import warnings
 warnings.filterwarnings("ignore")
+
+# Python module.
+#
+#
+# Pietro Foini
+#
+# Year: 2020
     
 def draw_adminstratas(country, adminstratas, folder_to_shapefiles, figsize = (15, 10), annotation = False, 
                       annotation_selected = False):
