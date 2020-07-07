@@ -115,7 +115,7 @@ class TsIP:
                 # Edit the layout of the y-axis.
                 fig.update_layout(yaxis_title = dict(text = self.yaxis, font = dict(size = 10)))
                 # Edit the layout of the title.
-                fig.update_layout(title = dict(text = self.title, y = 0.9, x = 0.5))
+                fig.update_layout(title = dict(text = title_name, y = 0.9, x = 0.5))
                 # Add range slider on x axis.
                 fig.update_layout(xaxis = dict(title = "Datetime", rangeselector = dict(), rangeslider = dict(visible = True), 
                                                type = "date"))
