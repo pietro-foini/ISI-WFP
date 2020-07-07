@@ -6,8 +6,12 @@ The time-series are plotted using either the *matplotlib* library or the *plotly
 
 ## Examples
 
-1. Supposing to have a dataframe `df` with a single level on axis 1 (we show only the first 5 rows):
+1. Supposing to have a simple dataframe `df` with a single level on axis 1 (we show only the first 5 rows):
 
 <img src="./images/level1.png" width="800">
 
-bla bla
+Using the TsIP library, we can easily visualize all the time-series with a simple command:
+
+<img src="./images/level1.gif" width="800">
+
+N.B. If `matplotlib = False`, the time-series are visualized using the plotly library which as you can see is much more engaging. The 
