@@ -14,29 +14,23 @@ warnings.filterwarnings("ignore")
 def draw_adminstratas(country, adminstratas, folder_to_shapefiles, figsize = (15, 10), annotation = False, 
                       annotation_selected = False):
     """
-    This module allows to plot the political boundaries of the selected country. More precisely, it allows to distinguish 
-    all the provinces to those that are pass in the 'adminstratas' parameter.
+    This module allows to plot the political boundaries of the selected country. More precisely, it allows to view the provinces selected, 
+    thanks to the 'adminstratas' parameter from the others.
     
     Parameters
     ----------
-    country: a string corresponding to the name of the country.
-    adminstratas: a list of provinces strings which are highlighted when viewing the map.
+    country: a string parameter corresponding to the name of the country.
+    adminstratas: a list of strings of provinces which are highlighted when viewing the map.
     folder_to_shapefiles: the path to reach the folder where the shapefiles are stored.
     figsize: the size of the map figure.
-    annotation: a boolean parameter to set if you want to visualize the names of the adminstratas.
-    annotation_selected: a boolean parameter to set if you want to visualize only the names of the adminstratas selected.
+    annotation: a boolean parameter to set if you want to visualize the names of all the provinces.
+    annotation_selected: a boolean parameter to set if you want to visualize only the names of the provinces selected.
     
     """
     # Load the dataframe of the country.
-    gdf = gpd.read_file(folder_to_shapefiles + "/" + country + "/" + country + ".shp")
+    gdf = gpd.read_file(folder_to_shapefiles + "/" + country + ".shp")
     
-    # Consider or not some provinces/sub-provinces of the Nigeria country.
-    if country == "Nigeria" and any(admin in ["Adamawa Central", "Adamawa North", "Adamawa South", "Borno Central", "Borno North", "Borno South", "Yobe East", "Yobe North", "Yobe South"] for admin in adminstratas):
-        gdf = gdf[~gdf.admin.isin(["Adamawa", "Borno", "Yobe"])]
-    elif country == "Nigeria" and not any(admin in ["Adamawa Central", "Adamawa North", "Adamawa South", "Borno Central", "Borno North", "Borno South", "Yobe East", "Yobe North", "Yobe South"] for admin in adminstratas):
-        gdf = gdf[~gdf.admin.isin(["Adamawa Central", "Adamawa North", "Adamawa South", "Borno Central", "Borno North", "Borno South", "Yobe East", "Yobe North", "Yobe South"])]       
-    
-    # Select only the adminstratas defined by the user.
+    # Draw only the adminstratas defined by the user.
     gdf["draw"] = gdf.apply(lambda x: 1 if x.admin in adminstratas else np.nan, axis = 1)
     # Create figure.
     fig, ax = plt.subplots(figsize = figsize)
@@ -47,6 +41,44 @@ def draw_adminstratas(country, adminstratas, folder_to_shapefiles, figsize = (15
             gdf = gdf[gdf.admin.isin(adminstratas)]
         for x, y, label in zip(gdf.centroid.x, gdf.centroid.y, gdf.admin):
             ax.annotate(label, xy = (x, y), xytext = (3, 3), textcoords = "offset points", color = "black")
+    ax.set_title(country)
+    plt.axis("off")
+    plt.show()
+    
+def choropleth(country, quantiles, folder_to_shapefiles, figsize = (15, 10), annotation = False, 
+               annotation_selected = False):
+    """
+    This module allows to plot the choropleth map providing a quantiles for the provinces of the selected country.
+    
+    Parameters
+    ----------
+    country: a string parameter corresponding to the name of the country.
+    quantiles: a pandas serie object with index the provinces names and as values the corresponding quantiles.
+    folder_to_shapefiles: the path to reach the folder where the shapefiles are stored.
+    figsize: the size of the map figure.
+    annotation: a boolean parameter to set if you want to visualize the names of all the provinces.
+    annotation_selected: a boolean parameter to set if you want to visualize only the names of the provinces selected.
+    
+    """
+    # Load the dataframe of the country.
+    gdf = gpd.read_file(folder_to_shapefiles + "/" + country + ".shp")
+    
+    # Define the selected adminstratas.
+    adminstratas = quantiles.index
+    
+    # Draw only the adminstratas defined by the user.
+    gdf["draw"] = gdf.apply(lambda x: quantiles.loc[x.admin] if x.admin in adminstratas else np.nan, axis = 1)
+    # Create figure.
+    f, ax = plt.subplots(1, figsize = figsize)
+    ax = gdf.plot(column = "draw", ax = ax, edgecolor = "black", legend = True, alpha = 1, scheme = "quantiles", 
+                  missing_kwds = {"color": "lightgrey", "edgecolor": "red", "hatch": "///", "label": "Missing values"}, 
+                  legend_kwds = dict(loc = "upper left", bbox_to_anchor = (1, 1)))
+    if annotation:
+        if annotation_selected:
+            gdf = gdf[gdf.admin.isin(adminstratas)]
+        for x, y, label in zip(gdf.centroid.x, gdf.centroid.y, gdf.admin):
+            ax.annotate(label, xy = (x, y), xytext = (4, 4), textcoords = "offset points", color = "chocolate")
+
     ax.set_title(country)
     plt.axis("off")
     plt.show()
