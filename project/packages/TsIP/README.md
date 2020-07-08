@@ -20,7 +20,7 @@ N.B. If `matplotlib = False`, the time-series are visualized using the plotly li
 
 <img src="./images/level2.png" width="800">
 
-We now visualize the time-series using the matplotlib library:
+We now visualize the time-series using the matplotlib library as example:
 
 <img src="./images/level2.gif" width="800">
 
@@ -36,7 +36,7 @@ Returning to visualize the time-series using the plotly library:
 
 <img src="./images/level3.gif" width="800">
 
-The TsIP module has the potential to manage dataframes that can have up to 4 levels on axis 1.
+The TsIP module has the potential to manage dataframes that can have up to 4 levels on axis 1. Otherwise, it is also possible to compare the time-series that belong to two equal hierarchical dataframes.
 
-
+<img src="./images/comparison.png" width="800">
 

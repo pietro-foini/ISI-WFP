@@ -14,17 +14,17 @@ warnings.filterwarnings("ignore")
 def draw_adminstratas(country, adminstratas, folder_to_shapefiles, figsize = (15, 10), annotation = False, 
                       annotation_selected = False):
     """
-    This module allows to plot the political boundaries of the selected country. More precisely, it allows to view the provinces selected, 
-    thanks to the 'adminstratas' parameter from the others.
+    This module allows to plot the political boundaries of the selected country using shapefiles. More precisely, it allows to view the
+    provinces (adminstratas) provided by the users.
     
     Parameters
     ----------
-    country: a string parameter corresponding to the name of the country.
-    adminstratas: a list of strings of provinces which are highlighted when viewing the map.
-    folder_to_shapefiles: the path to reach the folder where the shapefiles are stored.
-    figsize: the size of the map figure.
-    annotation: a boolean parameter to set if you want to visualize the names of all the provinces.
-    annotation_selected: a boolean parameter to set if you want to visualize only the names of the provinces selected.
+    country: a string parameter corresponding to the name of the country; e.g. "Yemen".
+    adminstratas: a list of strings of provincial names which are highlighted when viewing the map; e.g. ["Abyan", "Aden", "Taizz"].
+    folder_to_shapefiles: the path to reach the folder where the right shapefile is stored (with desired political granularity).
+    figsize: the size of the figure.
+    annotation: a boolean parameter to set if you want to visualize the names of all the provinces of the country.
+    annotation_selected: a boolean parameter to set if you want to visualize only the names of the provinces provided.
     
     """
     # Load the dataframe of the country.
@@ -48,22 +48,23 @@ def draw_adminstratas(country, adminstratas, folder_to_shapefiles, figsize = (15
 def choropleth(country, quantiles, folder_to_shapefiles, figsize = (15, 10), annotation = False, 
                annotation_selected = False):
     """
-    This module allows to plot the choropleth map providing a quantiles for the provinces of the selected country.
+    This module allows to plot the choropleth map providing a the provincial names of the selected country and their corresponding 
+    values with which the map will be colored.
     
     Parameters
     ----------
-    country: a string parameter corresponding to the name of the country.
-    quantiles: a pandas serie object with index the provinces names and as values the corresponding quantiles.
+    country: a string parameter corresponding to the name of the country; e.g. "Yemen".
+    quantiles: a pandas serie object with as index the provincial names and as values the corresponding values.
     folder_to_shapefiles: the path to reach the folder where the shapefiles are stored.
-    figsize: the size of the map figure.
-    annotation: a boolean parameter to set if you want to visualize the names of all the provinces.
-    annotation_selected: a boolean parameter to set if you want to visualize only the names of the provinces selected.
+    figsize: the size of the figure.
+    annotation: a boolean parameter to set if you want to visualize the names of all the provinces of the country.
+    annotation_selected: a boolean parameter to set if you want to visualize only the names of the provinces provided.
     
     """
     # Load the dataframe of the country.
     gdf = gpd.read_file(folder_to_shapefiles + "/" + country + ".shp")
     
-    # Define the selected adminstratas.
+    # Define the provided adminstratas.
     adminstratas = quantiles.index
     
     # Draw only the adminstratas defined by the user.
