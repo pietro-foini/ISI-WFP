@@ -7,5 +7,5 @@ This folder contains the shape files (the shapefile format is a geospatial vecto
 - Burkina Faso;
 - Syria;
 
-More precisely, they contain information regarding political division at different granularity (see notebook to visualize the administrative boundaries of each country).
+More precisely, they contain information regarding political division at different granularity (see notebook to visualize the boundaries of each country).
 
