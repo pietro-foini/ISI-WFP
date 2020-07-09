@@ -10,9 +10,7 @@ Let's now procede to convert the whole time-series (it could be useful not measu
 
 <img src="https://render.githubusercontent.com/render/math?math=X = \{120, 74, 203, 167, 92, 148, 174, 47\}">
 
-$$$$
-
-(let us ignore sliding windows $w$ by now). We shall transform this series into symbol series. For simplicity, let us suppose that the embedding dimension $m = 3$. This quantity determines the amount of symbols that can possibly exist, more precisely $m!$. See in the figure as an illustration of the possible symbols that can be obtained.
+(let us ignore sliding windows <img src="https://render.githubusercontent.com/render/math?math=w"> by now). We shall transform this series into symbol series. For simplicity, let us suppose that the embedding dimension <img src="https://render.githubusercontent.com/render/math?math=m = 3">. This quantity determines the amount of symbols that can possibly exist, more precisely <img src="https://render.githubusercontent.com/render/math?math=m!">. See in the figure as an illustration of the possible symbols that can be obtained.
 
 <img src="./images/STE.png" width="400">
 
