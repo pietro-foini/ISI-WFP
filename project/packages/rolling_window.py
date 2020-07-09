@@ -1,6 +1,6 @@
 import numpy as np
 
-def rolling_window(array, window=(0,), asteps=None, wsteps=None, axes=None, toend=True):
+def rolling_window(array, window = (0,), asteps = None, wsteps = None, axes = None, toend = True):
     """Create a view of `array` which for every point gives the n-dimensional
     neighbourhood of size window. New dimensions are added at the end of
     `array` or after the corresponding original dimension.
@@ -80,7 +80,7 @@ def rolling_window(array, window=(0,), asteps=None, wsteps=None, axes=None, toen
     
     if axes is not None:
         axes = np.atleast_1d(axes)
-        w = np.zeros(array.ndim, dtype=int)
+        w = np.zeros(array.ndim, dtype = int)
         for axis, size in zip(axes, window):
             w[axis] = size
         window = w
@@ -127,7 +127,7 @@ def rolling_window(array, window=(0,), asteps=None, wsteps=None, axes=None, toen
     
     # For calculating the new shape 0s must act like 1s:
     _window = window.copy()
-    _window[_window==0] = 1
+    _window[_window == 0] = 1
     
     new_shape[-len(window):] += wsteps - _window * wsteps
     new_shape = (new_shape + asteps - 1) // asteps
@@ -151,8 +151,8 @@ def rolling_window(array, window=(0,), asteps=None, wsteps=None, axes=None, toen
         _[-len(window):] = new_strides
         _new_strides = _
         
-        new_shape = np.zeros(len(shape)*2, dtype=int)
-        new_strides = np.zeros(len(shape)*2, dtype=int)
+        new_shape = np.zeros(len(shape)*2, dtype = int)
+        new_strides = np.zeros(len(shape)*2, dtype = int)
         
         new_shape[::2] = shape
         new_strides[::2] = strides
@@ -162,4 +162,4 @@ def rolling_window(array, window=(0,), asteps=None, wsteps=None, axes=None, toen
     new_strides = new_strides[new_shape != 0]
     new_shape = new_shape[new_shape != 0]
     
-    return np.lib.stride_tricks.as_strided(array, shape=new_shape, strides=new_strides)
+    return np.lib.stride_tricks.as_strided(array, shape = new_shape, strides = new_strides)

@@ -12,7 +12,6 @@ from IPython.display import display
 #
 # Year: 2020
 
-
 class TsIP:
     """TsIP (Time-series Interactive Plot).
     
