@@ -38,7 +38,7 @@ where the sum runs over each unique state of the sequences. <img src="https://re
 
 We can obtain the matrix <img src="https://render.githubusercontent.com/render/math?math=\{T_{XY}\}">, which contains pairwise information about how each component in the system controls (or is controlled by) the others. The matrix <img src="https://render.githubusercontent.com/render/math?math=\{T_{XY}\}"> is asymmetric. 
 
-The transfer entropy in this "discrete" case can be derived using conditional Shannon entropies by expanding the logarithm:
+The transfer entropy in this "discrete" case (or simply into its symbolized version) can be derived using conditional Shannon entropies by expanding the logarithm:
 
 <p align="center">
 <img src="https://render.githubusercontent.com/render/math?math=T_{XY} = H(\hat{y}_{i %2B 1}|\hat{y}_{i}) - H(\hat{y}_{i %2B 1}|\hat{y}_{i}, \hat{x}_{i})">
@@ -47,7 +47,7 @@ The transfer entropy in this "discrete" case can be derived using conditional Sh
 where <img src="https://render.githubusercontent.com/render/math?math=H(\hat{y}_{i %2B 1}|\hat{y}_{i}) = -\sum p(\hat{y}_{i %2B 1}, \hat{y}_{i}) log_2(p(\hat{y}_{i %2B 1}| \hat{y}_{i}))"> is the entropy rate (a conditional Shannon entropy) and similarly <img src="https://render.githubusercontent.com/render/math?math=H(\hat{y}_{i %2B 1}|\hat{y}_{i}, \hat{x}_{i})"> a generalised entropy rate. The entropy rate <img src="https://render.githubusercontent.com/render/math?math=H(\hat{y}_{i %2B 1}|\hat{y}_{i})"> accounts for the average number of bits needed to encode one additional state of the system if the previous states is known, while the entropy rate <img src="https://render.githubusercontent.com/render/math?math=H(\hat{y}_{i %2B 1}|\hat{y}_{i}, \hat{x}_{i})"> is the entropy rate capturing the average number of bits required to represent the value of the next destination’s state if source state is included in addition. Since one can always write [5]:
 
 <p align="center">
-<img src="https://render.githubusercontent.com/render/math?math=H(\hat{y}_{i+1}|\hat{y}_{i}) = -\sum p(\hat{y}_{i %2B 1}, \hat{y}_{i}) log_2(p(\hat{y}_{i %2B 1}| \hat{y}_{i})) = -\sum p(\hat{y}_{i %2B 1}, \hat{y}_{i}, \hat{x}_{i}) log_2(p(\hat{y}_{i %2B 1}| \hat{y}_{i}))">
+<img src="https://render.githubusercontent.com/render/math?math=H(\hat{y}_{i %2B 1}|\hat{y}_{i}) = -\sum p(\hat{y}_{i %2B 1}, \hat{y}_{i}) log_2(p(\hat{y}_{i %2B 1}| \hat{y}_{i})) = -\sum p(\hat{y}_{i %2B 1}, \hat{y}_{i}, \hat{x}_{i}) log_2(p(\hat{y}_{i %2B 1}| \hat{y}_{i}))">
 </p>
 
 it is easy to see that the entropy rate <img src="https://render.githubusercontent.com/render/math?math=H(\hat{y}_{i %2B 1}|\hat{y}_{i})"> is equivalent to the rate <img src="https://render.githubusercontent.com/render/math?math=H(\hat{y}_{i %2B 1}|\hat{y}_{i}, \hat{x}_{i})"> when the next state of destination is independent of the source:
@@ -79,8 +79,6 @@ In addition to these definitions, it is necessary to set a horizon prediction to
 where for <img src="https://render.githubusercontent.com/render/math?math=h = 1"> and <img src="https://render.githubusercontent.com/render/math?math=k_x = k_y = 1"> is equivalent to the standard form of the transfer entropy based on Markov property not generalized.
 
 **The dominant direction of the information flow can be inferred by calculating the difference between <img src="https://render.githubusercontent.com/render/math?math=T_{YX}"> and <img src="https://render.githubusercontent.com/render/math?math=T_{XY}">**. It is convenient to define the directionality index <img src="https://render.githubusercontent.com/render/math?math=T_{XY}^{S} = T_{YX} - T_{XY}">, which measures the balance of information flow in both directions. **This index quantifies the dominant direction of information flow and is expected to have positive values for undirectional couplings with <img src="https://render.githubusercontent.com/render/math?math=x"> (x-axis) as driver and negative values if <img src="https://render.githubusercontent.com/render/math?math=y"> (y-axis) is driving <img src="https://render.githubusercontent.com/render/math?math=x">**. For symmetric bidirectional couplings, we expect <img src="https://render.githubusercontent.com/render/math?math=T_{XY}^{S}"> to be null. In this case the matrix is symmetric, for this reason I show only a side of the matrix.
-
-Entropy, mutual information, and transfer entropy can be normalized with respect to the maximum possible entropy <img src="https://render.githubusercontent.com/render/math?math=H"> of a distribution where all states are equally probable, i.e., <img src="https://render.githubusercontent.com/render/math?math=H = log(m!)">, where <img src="https://render.githubusercontent.com/render/math?math=m"> is the embedding dimension used during the symbolic conversion. This normalization eliminates differences in entropy that are caused simply by the number of symbols used for discretization or the resolution of the partition, and renders a metric as a fraction of possible entropy or information from zero to one.
 
 ## References
 
