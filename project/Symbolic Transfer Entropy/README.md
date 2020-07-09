@@ -73,7 +73,7 @@ Also in this case, we can define the transfer entropy as the difference of these
 In addition to these definitions, it is necessary to set a horizon prediction to the variable <img src="https://render.githubusercontent.com/render/math?math=X"> (or <img src="https://render.githubusercontent.com/render/math?math=Y"> depending on the case). This horizon indicates how far in the future of <img src="https://render.githubusercontent.com/render/math?math=X"> will be analyzed and is symbolized by the parameter <img src="https://render.githubusercontent.com/render/math?math=h">. Let <img src="https://render.githubusercontent.com/render/math?math=x_{i %2B h}"> denote the value of <img src="https://render.githubusercontent.com/render/math?math=X"> at time instant <img src="https://render.githubusercontent.com/render/math?math=i %2B h">, that is, <img src="https://render.githubusercontent.com/render/math?math=h"> steps in the future from <img src="https://render.githubusercontent.com/render/math?math=i">, and <img src="https://render.githubusercontent.com/render/math?math=h"> is referred to as the prediction horizon. That is if <img src="https://render.githubusercontent.com/render/math?math=h = 1"> the method will always verify only one sample ahead of the present, over the whole time analysis. Meaning that, assuming <img src="https://render.githubusercontent.com/render/math?math=i"> instants as the time reference. The method will check whether or not the past of <img src="https://render.githubusercontent.com/render/math?math=Y"> is influencing the behavior of the <img src="https://render.githubusercontent.com/render/math?math=X"> variable in time instant <img src="https://render.githubusercontent.com/render/math?math=i %2B 1">.
 
 <p align="center">
-<img src="https://render.githubusercontent.com/render/math?math=T_{YX} = \sum p(\hat{x}_{i %2B h}, \mathbf{\hat{x}_{i}^{(k_x)}}, \mathbf{\hat{y}_{i}^{(k_y)}}) log_2(\frac{p(\hat{x}_{i %2B h}, \mathbf{\hat{x}_{i}^{(k_x)}}, \mathbf{\hat{y}_{i}^{(k_y)}}) p(\mathbf{\hat{x}_{i}^{(k_x)}})}{p(\mathbf{\hat{x}_{i}^{(k_x)}}, \mathbf{\hat{y}_{i}^{(k_y)}}) p(\hat{x}_{i %2B h}, \mathbf{\hat{x}_{i}^{(k_x)}})})"> \ \ \ \ \ \ \ (6)
+<img src="https://render.githubusercontent.com/render/math?math=T_{YX} = \sum p(\hat{x}_{i %2B h}, \mathbf{\hat{x}_{i}^{(k_x)}}, \mathbf{\hat{y}_{i}^{(k_y)}}) log_2(\frac{p(\hat{x}_{i %2B h}, \mathbf{\hat{x}_{i}^{(k_x)}}, \mathbf{\hat{y}_{i}^{(k_y)}}) p(\mathbf{\hat{x}_{i}^{(k_x)}})}{p(\mathbf{\hat{x}_{i}^{(k_x)}}, \mathbf{\hat{y}_{i}^{(k_y)}}) p(\hat{x}_{i %2B h}, \mathbf{\hat{x}_{i}^{(k_x)}})})          (6)">
 </p>
 
 where for <img src="https://render.githubusercontent.com/render/math?math=h = 1"> and <img src="https://render.githubusercontent.com/render/math?math=k_x = k_y = 1"> is equivalent to the standard form of the transfer entropy based on Markov property not generalized.
@@ -89,6 +89,16 @@ Using the generalized formula of the transfer entropy, we can play with <img src
 </p>
 
 Similarly, we use the STE and go in search of the *plateau* on the graph of STE over the <img src="https://render.githubusercontent.com/render/math?math=k_x">.
+
+#### Toy models
+
+<p align="center"> 
+<img src="./images/toy_model1.png" width="400">
+</p>
+
+<p align="center"> 
+<img src="./images/toy_model2.png" width="400">
+</p>
 
 ## References
 
