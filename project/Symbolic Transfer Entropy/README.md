@@ -1,6 +1,10 @@
 # Symbolic-Transfer-Entropy
 
+## Overview
+
 There are several techniques (e.g. mutual information, granger casuality) that can be used to detect *directed exchange of information* across the time-series. Here, we characterize the information flow between different time-series using the **Symbolic Transfer Entropy** (STE) [1]. **STE quantifies the directional flow of information between two time series, <img src="https://render.githubusercontent.com/render/math?math=X"> and <img src="https://render.githubusercontent.com/render/math?math=Y"> of length <img src="https://render.githubusercontent.com/render/math?math=N">, by first categorizing the signals in a small set of symbols or alphabet according to the pattern trends.** In [2] the authors have shown that the transfer entropy is equivalent to Granger causality for Gaussian processes. An advantage to use STE despite to Granger causality, is to capture non-linear causalities [3]. In the paper [3], the advantaged of STE over the Granger causality are analyzed. There are several techniques for estimating TE from observed data in order to apply it to real-world data problems. However, most of them require a large amount of data, and consequently, their results are commonly biased due to small-sample effects, which limits the use of TE in practical data applications. To avoid this problem, we use the robust and computationally fast technique of symbolization to estimate TE.
+
+## Algorithm
 
 Let's now procede to convert the whole time-series (it could be useful not measuring the STE over time-series taken as a whole, but over sliding windows of length $w \ll L$) into a symbolic representation. A time-series is transformed into symbol sequences, for which an *embedding dimension* $3 \leq m \leq 7$ must be chosen. Let us consider a simple example of how this works. Imagine we have a signal:
 
@@ -12,15 +16,9 @@ $$X = \{120, 74, 203, 167, 92, 148, 174, 47\}$$
 
 The first step to transform $X$ into symbol sequences is to sort their subchains of length $m$ in increasing order. So, we take the first three elements of $X$ and sort them, which leaves us with $\{74, 120, 203\}$. We have kept tract of these values' indices, such that the sequence now looks like $\{2, 1, 3\}$. This first subchain maps to symbol $D$. From this scheme, we just need to advance one value at a time: the next subchain to consider is $\{74, 203, 167\}$. Its sorted version is $\{74, 167, 203\}$ which corresponds to $\{1, 3, 2\}$, and maps to $B$. And so on, until to achieve a symbol sequence $\hat{X} = \{D, B, F, E, A, C\}$. With a similar procedure, other series $Y$ are transormed into $\hat{Y}$. In our case, we consider directly the same permutations as symbols, for example the following permutations are derived by an embedding dimension $m = 3$: $\{(1, 2, 3): 0, (1, 3, 2), (2, 1, 3), (2, 3, 1), (3, 1, 2), (3, 2, 1)\}$. A way to interpret the meaning of $m$ is to think of it as the amount of *expressiveness* it allows to the original series. That is, if $m$ is low, a rich signal (one with many changes in it) is reduced to a small amount of possible symbols. An important feature of symbolic approaches is that they discount the relative magnitude of the time series; this is important in our case because different geographical units (our provinces) can differ largely in population density or other parameters. **Moreover, STE can successfully analyze time-series which may be short and/or non-stationary**. A drawback is that it considers only the order pattern of the time ù-series hence the information contained in the magnitude of the differences between amplitude values may not be taken into account. For example, $[1, 100, 2]$ and $[1, 3, 2]$ have the same permutation pattern $[0,2,1]$, but they vary greatly in size and tendency.
 
-[1]. "Symbolic transfer entropy", M. Staniek and K. Lehnertz, 2008.
-
-[2]. "Equivalence of granger causality and transfer entropy: A generalization", K. Schindlerova, 2011.
-
-[3]. "Transfer entropy as a variable selection methodology of cryptocurrencies in the framework of a high dimensional predictive model", García-Medina, González Farías.
-
 Given these symbol sequences, the transfer entropy between a pair of signals can be computed.
 
-Let $\hat{x}_i = \hat{x}(i)$ and $\hat{y}_i = \hat{y}(i)$, $i = 1, ..., N$, denote sequences of observations from systems $\hat{X}$ and $\hat{Y}$ (symbolized time-series). *Transfer entropy*[1] incorporates time dependence by relating previous samples $\hat{x}_i$ and $\hat{y}_i$ to predict the next value $\hat{x}_{i+1}$, and quantifies the deviation from the Markov property, $p(\hat{x}_{i+1}|\hat{x}_i, \hat{y}_i) = p(\hat{x}_{i+1}|\hat{x}_i)$, where $p$ denotes the transition probability density. If there is no deviation from the Markov property, $\hat{Y}$ has no influence on $\hat{X}$. **Transfer entropy, which is formulated as Kullback-Leibler entropy between $p(\hat{x}_{i+1}|\hat{x}_i, \hat{y}_i)$ and $p(\hat{x}_{i+1}|\hat{x}_i)$, quantifies the incorrectness of this assumption**, and is explicitly non-symmetric under the exchange of $\hat{x}_i$ and $\hat{y}_i$. *The main convenience of such an information theoretic functional designed to detect causality is that, in principle, it does not assume any particular model for the interaction between the two systems of interest*.
+Let $\hat{x}_i = \hat{x}(i)$ and $\hat{y}_i = \hat{y}(i)$, $i = 1, ..., N$, denote sequences of observations from systems $\hat{X}$ and $\hat{Y}$ (symbolized time-series). *Transfer entropy*[4] incorporates time dependence by relating previous samples $\hat{x}_i$ and $\hat{y}_i$ to predict the next value $\hat{x}_{i+1}$, and quantifies the deviation from the Markov property, $p(\hat{x}_{i+1}|\hat{x}_i, \hat{y}_i) = p(\hat{x}_{i+1}|\hat{x}_i)$, where $p$ denotes the transition probability density. If there is no deviation from the Markov property, $\hat{Y}$ has no influence on $\hat{X}$. **Transfer entropy, which is formulated as Kullback-Leibler entropy between $p(\hat{x}_{i+1}|\hat{x}_i, \hat{y}_i)$ and $p(\hat{x}_{i+1}|\hat{x}_i)$, quantifies the incorrectness of this assumption**, and is explicitly non-symmetric under the exchange of $\hat{x}_i$ and $\hat{y}_i$. *The main convenience of such an information theoretic functional designed to detect causality is that, in principle, it does not assume any particular model for the interaction between the two systems of interest*.
 
 Now, we can obtain the pairwise STE computing the joint and conditional probabilities of the sequence indices from the relative frequency of symbols in each sequence, $\hat{X}$ and $\hat{Y}$, using the Shannon transfer entropy:
 
@@ -36,7 +34,7 @@ The transfer entropy in this "discrete" case can be derived using conditional Sh
 
 $$T_{XY} = H(\hat{y}_{i+1}|\hat{y}_{i}) - H(\hat{y}_{i+1}|\hat{y}_{i}, \hat{x}_{i})$$
 
-where $H(\hat{y}_{i+1}|\hat{y}_{i}) = -\sum p(\hat{y}_{i+1}, \hat{y}_{i}) log_2(p(\hat{y}_{i+1}| \hat{y}_{i}))$ is the entropy rate (a conditional Shannon entropy) and similarly $H(\hat{y}_{i+1}|\hat{y}_{i}, \hat{x}_{i})$ a generalised entropy rate. The entropy rate $H(\hat{y}_{i+1}|\hat{y}_{i})$ accounts for the average number of bits needed to encode one additional state of the system if the previous states is known, while the entropy rate $H(\hat{y}_{i+1}|\hat{y}_{i}, \hat{x}_{i})$ is the entropy rate capturing the average number of bits required to represent the value of the next destination’s state if source state is included in addition. Since one can always write [2]:
+where $H(\hat{y}_{i+1}|\hat{y}_{i}) = -\sum p(\hat{y}_{i+1}, \hat{y}_{i}) log_2(p(\hat{y}_{i+1}| \hat{y}_{i}))$ is the entropy rate (a conditional Shannon entropy) and similarly $H(\hat{y}_{i+1}|\hat{y}_{i}, \hat{x}_{i})$ a generalised entropy rate. The entropy rate $H(\hat{y}_{i+1}|\hat{y}_{i})$ accounts for the average number of bits needed to encode one additional state of the system if the previous states is known, while the entropy rate $H(\hat{y}_{i+1}|\hat{y}_{i}, \hat{x}_{i})$ is the entropy rate capturing the average number of bits required to represent the value of the next destination’s state if source state is included in addition. Since one can always write [5]:
 
 $$ H(\hat{y}_{i+1}|\hat{y}_{i}) = -\sum p(\hat{y}_{i+1}, \hat{y}_{i}) log_2(p(\hat{y}_{i+1}| \hat{y}_{i})) = -\sum p(\hat{y}_{i+1}, \hat{y}_{i}, \hat{x}_{i}) log_2(p(\hat{y}_{i+1}| \hat{y}_{i}))$$
 
@@ -60,12 +58,19 @@ $$ T_{YX} = \sum p(\hat{x}_{i+h}, \mathbf{\hat{x}_{i}^{(k_x)}}, \mathbf{\hat{y}_
 
 where for $h = 1$ and $k_x = k_y = 1$ is equivalent to the standard form of the transfer entropy based on Markov property not generalized.
 
-[1]. T.Schreiber, "Measuring information transfer", 2000.
-
-[2]. "On Thermodynamic Interpretation of Transfer Entropy", Mikhail Prokopenko, Joseph T. Lizier and Don C. Price.
-
 **The dominant direction of the information flow can be inferred by calculating the difference between $T_{YX}$ and $T_{XY}$**. It is convenient to define the directionality index $T_{XY}^{S} = T_{YX} - T_{XY}$, which measures the balance of information flow in both directions. **This index quantifies the dominant direction of information flow and is expected to have positive values for undirectional couplings with $x$ (x-axis) as driver and negative values if $y$ (y-axis) is driving $x$**. For symmetric bidirectional couplings, we expect $T_{XY}^{S}$ to be null. In this case the matrix is symmetric, for this reason I show only a side of the matrix.
 
 
 Entropy, mutual information, and transfer entropy can be normalized with respect to the maximum possible entropy $H$ of a distribution where all states are equally probable, i.e., $H = log(m!)$, where $m$ is the embedding dimension used during the symbolic conversion. This normalization eliminates differences in entropy that are caused simply by the number of symbols used for discretization or the resolution of the partition, and renders a metric as a fraction of possible entropy or information from zero to one.
 
+## References
+
+[1]. "Symbolic transfer entropy", M. Staniek and K. Lehnertz, 2008.
+
+[2]. "Equivalence of granger causality and transfer entropy: A generalization", K. Schindlerova, 2011.
+
+[3]. "Transfer entropy as a variable selection methodology of cryptocurrencies in the framework of a high dimensional predictive model", García-Medina, González Farías.
+
+[4]. T.Schreiber, "Measuring information transfer", 2000.
+
+[5]. "On Thermodynamic Interpretation of Transfer Entropy", Mikhail Prokopenko, Joseph T. Lizier and Don C. Price.
