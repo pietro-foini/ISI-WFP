@@ -27,7 +27,7 @@ Let <img src="https://render.githubusercontent.com/render/math?math=\hat{x}_i = 
 Now, we can obtain the pairwise STE computing the joint and conditional probabilities of the sequence indices from the relative frequency of symbols in each sequence, <img src="https://render.githubusercontent.com/render/math?math=\hat{X}"> and <img src="https://render.githubusercontent.com/render/math?math=\hat{Y}">, using the Shannon transfer entropy:
 
 <p align="center">
-<img src="https://render.githubusercontent.com/render/math?math=T_{XY} = \sum p(\hat{y}_{i %2B 1}, \hat{y}_{i}, \hat{x}_{i}) log_2(\frac{p(\hat{y}_{i %2B 1}| \hat{y}_{i}, \hat{x}_{i})}{p(\hat{y}_{i %2B 1}| \hat{y}_{i})}) = \sum p(\hat{y}_{i %2B 1}, \hat{y}_{i}, \hat{x}_{i}) log_2(\frac{p(\hat{y}_{i %2B 1}, \hat{y}_{i}, \hat{x}_{i}) p(\hat{y}_i)}{p(\hat{y}_i, \hat{x}_i) p(\hat{y}_{i %2B 1}, \hat{y}_{i})})">
+<img src="https://render.githubusercontent.com/render/math?math=T_{XY} = \sum p(\hat{y}_{i %2B 1}, \hat{y}_{i}, \hat{x}_{i}) log_2(\frac{p(\hat{y}_{i %2B 1}| \hat{y}_{i}, \hat{x}_{i})}{p(\hat{y}_{i %2B 1}| \hat{y}_{i})}) = \sum p(\hat{y}_{i %2B 1}, \hat{y}_{i}, \hat{x}_{i}) log_2(\frac{p(\hat{y}_{i %2B 1}, \hat{y}_{i}, \hat{x}_{i}) p(\hat{y}_i)}{p(\hat{y}_i, \hat{x}_i) p(\hat{y}_{i %2B 1}, \hat{y}_{i})})" \ \ \ \ \ 5>
 </p>
 
 where the sum runs over each unique state of the sequences. <img src="https://render.githubusercontent.com/render/math?math=T_{XY}"> (or better <img src="https://render.githubusercontent.com/render/math?math=T_{X \rightarrow Y}">) **measures the information flow from <img src="https://render.githubusercontent.com/render/math?math=X"> to <img src="https://render.githubusercontent.com/render/math?math=Y">**. It is non-negative, and any information transfer between the two variables results in <img src="https://render.githubusercontent.com/render/math?math=0 \leq {T}_{XY} < \infty">. If the state <img src="https://render.githubusercontent.com/render/math?math=\hat{x}_{i}"> has no influence on the transition probabilities from <img src="https://render.githubusercontent.com/render/math?math=\hat{y}_{i}"> to <img src="https://render.githubusercontent.com/render/math?math=\hat{y}_{i %2B 1}">, or if the two time series are completely synchronized, then <img src="https://render.githubusercontent.com/render/math?math={T}_{XY} = 0">. The logarithm has base 2, so that the TE is measured in bits. For example if <img src="https://render.githubusercontent.com/render/math?math=T_{X, Y} = 0.624"> means that the history of the <img src="https://render.githubusercontent.com/render/math?math=X"> process has <img src="https://render.githubusercontent.com/render/math?math=0.624"> bits of additional information for predicting the next value of <img src="https://render.githubusercontent.com/render/math?math=Y">. (i.e., it provides information about the future of <img src="https://render.githubusercontent.com/render/math?math=Y">, in addition to what we know from the history of <img src="https://render.githubusercontent.com/render/math?math=Y">). Since it is non-zero, you can conclude that <img src="https://render.githubusercontent.com/render/math?math=X"> influences <img src="https://render.githubusercontent.com/render/math?math=Y"> in some way. There are actually two equations for the transfer entropy, because it has an inherent asymmetry in it:
@@ -85,7 +85,7 @@ where for <img src="https://render.githubusercontent.com/render/math?math=h = 1"
 Using the generalized formula of the transfer entropy, we can play with <img src="https://render.githubusercontent.com/render/math?math=k_x"> i.e., the window size of the historical predictor <img src="https://render.githubusercontent.com/render/math?math=X"> used for the future target <img src="https://render.githubusercontent.com/render/math?math=Y"> prediction, in order to find to the optimal temporal lags for the predictor. A solution could be the estimation of the optimal <img src="https://render.githubusercontent.com/render/math?math=k_x"> as the minimum positive integer above which the change rate of the TE from <img src="https://render.githubusercontent.com/render/math?math=X"> to <img src="https://render.githubusercontent.com/render/math?math=Y"> decreases significantly [6]. More precisely, we first determine the optimal <img src="https://render.githubusercontent.com/render/math?math=k_y"> as the minimum non-negative integer above which the change rate of the entropy rate <img src="https://render.githubusercontent.com/render/math?math=H(\hat{y}_{i %2B 1}|\mathbf{\hat{y}_{i}^{(k_y)}})"> decreases significantly.
 
 <p align="center"> 
-<img src="./images/search_kx.png" width="400">
+<img src="./images/search_kx.png" width="300">
 </p>
 
 Similarly, we use the STE and go in search of the *plateau* on the graph of STE over the <img src="https://render.githubusercontent.com/render/math?math=k_x">.
@@ -93,11 +93,11 @@ Similarly, we use the STE and go in search of the *plateau* on the graph of STE 
 #### Toy models
 
 <p align="center"> 
-<img src="./images/toy_model1.png" width="400">
+<img src="./images/toy_model1.png" width="700">
 </p>
 
 <p align="center"> 
-<img src="./images/toy_model2.png" width="400">
+<img src="./images/toy_model2.png" width="700">
 </p>
 
 ## References
