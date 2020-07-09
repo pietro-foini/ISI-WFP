@@ -1,3 +1,0 @@
-GRID SEARCH: True 
-TEST: 30 
-ERROR: MSE 

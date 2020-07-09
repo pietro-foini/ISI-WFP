@@ -1,3 +1,0 @@
-batch_size,n_epochs,n_filters,n_kernels,n_nodes,n_seq,n_steps,optimizer,shuffle,loss
-51,1,54,3,884,7,57,adam,True,355.8862479969413
-52,1,55,3,653,7,42,adam,True,174.4469793957026
