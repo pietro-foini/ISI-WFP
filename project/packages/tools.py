@@ -31,5 +31,5 @@ def find_multiple_sets(df):
     # Removing NaN entries.
     events = [ev[~np.isnan(ev.values)] for ev in events if not isinstance(ev, np.ndarray)]
     # Removing empty DataFrames.
-    sets = [ev for ev in events if not ev.empty]
+    sets = [ev.drop_duplicates() for ev in events if not ev.empty]
     return sets
