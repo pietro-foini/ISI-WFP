@@ -27,13 +27,13 @@ Let <img src="https://render.githubusercontent.com/render/math?math=\hat{x}_i = 
 Now, we can obtain the pairwise STE computing the joint and conditional probabilities of the sequence indices from the relative frequency of symbols in each sequence, <img src="https://render.githubusercontent.com/render/math?math=\hat{X}"> and <img src="https://render.githubusercontent.com/render/math?math=\hat{Y}">, using the Shannon transfer entropy:
 
 <p align="center">
-<img src="https://render.githubusercontent.com/render/math?math=T_{XY} = \sum p(\hat{y}_{i %2B 1}, \hat{y}_{i}, \hat{x}_{i}) log_2(\frac{p(\hat{y}_{i %2B 1}| \hat{y}_{i}, \hat{x}_{i})}{p(\hat{y}_{i %2B 1}| \hat{y}_{i})}) = \sum p(\hat{y}_{i %2B 1}, \hat{y}_{i}, \hat{x}_{i}) log_2(\frac{p(\hat{y}_{i %2B 1}, \hat{y}_{i}, \hat{x}_{i}) p(\hat{y}_i)}{p(\hat{y}_i, \hat{x}_i) p(\hat{y}_{i %2B 1}, \hat{y}_{i})})\ \ \ \ \ (1)">
+<img src="https://render.githubusercontent.com/render/math?math=T_{XY} = \sum p(\hat{y}_{i %2B 1}, \hat{y}_{i}, \hat{x}_{i}) log_2(\frac{p(\hat{y}_{i %2B 1}| \hat{y}_{i}, \hat{x}_{i})}{p(\hat{y}_{i %2B 1}| \hat{y}_{i})}) = \sum p(\hat{y}_{i %2B 1}, \hat{y}_{i}, \hat{x}_{i}) log_2(\frac{p(\hat{y}_{i %2B 1}, \hat{y}_{i}, \hat{x}_{i}) p(\hat{y}_i)}{p(\hat{y}_i, \hat{x}_i) p(\hat{y}_{i %2B 1}, \hat{y}_{i})})\ \ \ \ \ \ \ \ \ \ (1)">
 </p>
 
 where the sum runs over each unique state of the sequences. <img src="https://render.githubusercontent.com/render/math?math=T_{XY}"> (or better <img src="https://render.githubusercontent.com/render/math?math=T_{X \rightarrow Y}">) **measures the information flow from <img src="https://render.githubusercontent.com/render/math?math=X"> to <img src="https://render.githubusercontent.com/render/math?math=Y">**. It is non-negative, and any information transfer between the two variables results in <img src="https://render.githubusercontent.com/render/math?math=0 \leq {T}_{XY} < \infty">. If the state <img src="https://render.githubusercontent.com/render/math?math=\hat{x}_{i}"> has no influence on the transition probabilities from <img src="https://render.githubusercontent.com/render/math?math=\hat{y}_{i}"> to <img src="https://render.githubusercontent.com/render/math?math=\hat{y}_{i %2B 1}">, or if the two time series are completely synchronized, then <img src="https://render.githubusercontent.com/render/math?math={T}_{XY} = 0">. The logarithm has base 2, so that the TE is measured in bits. For example if <img src="https://render.githubusercontent.com/render/math?math=T_{X, Y} = 0.624"> means that the history of the <img src="https://render.githubusercontent.com/render/math?math=X"> process has <img src="https://render.githubusercontent.com/render/math?math=0.624"> bits of additional information for predicting the next value of <img src="https://render.githubusercontent.com/render/math?math=Y">. (i.e., it provides information about the future of <img src="https://render.githubusercontent.com/render/math?math=Y">, in addition to what we know from the history of <img src="https://render.githubusercontent.com/render/math?math=Y">). Since it is non-zero, you can conclude that <img src="https://render.githubusercontent.com/render/math?math=X"> influences <img src="https://render.githubusercontent.com/render/math?math=Y"> in some way. There are actually two equations for the transfer entropy, because it has an inherent asymmetry in it:
 
 <p align="center">
-<img src="https://render.githubusercontent.com/render/math?math=T_{YX} = \sum p(\hat{x}_{i %2B 1}, \hat{x}_{i}, \hat{y}_{i}) log_2(\frac{p(\hat{x}_{i %2B 1}, \hat{x}_{i}, \hat{y}_{i}) p(\hat{x}_i)}{p(\hat{x}_i, \hat{y}_i) p(\hat{x}_{i %2B 1}, \hat{x}_{i})})">
+<img src="https://render.githubusercontent.com/render/math?math=T_{YX} = \sum p(\hat{x}_{i %2B 1}, \hat{x}_{i}, \hat{y}_{i}) log_2(\frac{p(\hat{x}_{i %2B 1}, \hat{x}_{i}, \hat{y}_{i}) p(\hat{x}_i)}{p(\hat{x}_i, \hat{y}_i) p(\hat{x}_{i %2B 1}, \hat{x}_{i})})\ \ \ \ \ \ \ \ \ \ (2)">
 </p>
 
 We can obtain the matrix <img src="https://render.githubusercontent.com/render/math?math=\{T_{XY}\}">, which contains pairwise information about how each component in the system controls (or is controlled by) the others. The matrix <img src="https://render.githubusercontent.com/render/math?math=\{T_{XY}\}"> is asymmetric. 
@@ -41,19 +41,19 @@ We can obtain the matrix <img src="https://render.githubusercontent.com/render/m
 The transfer entropy in this "discrete" case (or simply into its symbolized version) can be derived using conditional Shannon entropies by expanding the logarithm:
 
 <p align="center">
-<img src="https://render.githubusercontent.com/render/math?math=T_{XY} = H(\hat{y}_{i %2B 1}|\hat{y}_{i}) - H(\hat{y}_{i %2B 1}|\hat{y}_{i}, \hat{x}_{i})">
+<img src="https://render.githubusercontent.com/render/math?math=T_{XY} = H(\hat{y}_{i %2B 1}|\hat{y}_{i}) - H(\hat{y}_{i %2B 1}|\hat{y}_{i}, \hat{x}_{i})\ \ \ \ \ \ \ \ \ \ (3)">
 </p>
 
 where <img src="https://render.githubusercontent.com/render/math?math=H(\hat{y}_{i %2B 1}|\hat{y}_{i}) = -\sum p(\hat{y}_{i %2B 1}, \hat{y}_{i}) log_2(p(\hat{y}_{i %2B 1}| \hat{y}_{i}))"> is the entropy rate (a conditional Shannon entropy) and similarly <img src="https://render.githubusercontent.com/render/math?math=H(\hat{y}_{i %2B 1}|\hat{y}_{i}, \hat{x}_{i})"> a generalised entropy rate. The entropy rate <img src="https://render.githubusercontent.com/render/math?math=H(\hat{y}_{i %2B 1}|\hat{y}_{i})"> accounts for the average number of bits needed to encode one additional state of the system if the previous states is known, while the entropy rate <img src="https://render.githubusercontent.com/render/math?math=H(\hat{y}_{i %2B 1}|\hat{y}_{i}, \hat{x}_{i})"> is the entropy rate capturing the average number of bits required to represent the value of the next destination’s state if source state is included in addition. Since one can always write [5]:
 
 <p align="center">
-<img src="https://render.githubusercontent.com/render/math?math=H(\hat{y}_{i %2B 1}|\hat{y}_{i}) = -\sum p(\hat{y}_{i %2B 1}, \hat{y}_{i}) log_2(p(\hat{y}_{i %2B 1}| \hat{y}_{i})) = -\sum p(\hat{y}_{i %2B 1}, \hat{y}_{i}, \hat{x}_{i}) log_2(p(\hat{y}_{i %2B 1}| \hat{y}_{i}))">
+<img src="https://render.githubusercontent.com/render/math?math=H(\hat{y}_{i %2B 1}|\hat{y}_{i}) = -\sum p(\hat{y}_{i %2B 1}, \hat{y}_{i}) log_2(p(\hat{y}_{i %2B 1}| \hat{y}_{i})) = -\sum p(\hat{y}_{i %2B 1}, \hat{y}_{i}, \hat{x}_{i}) log_2(p(\hat{y}_{i %2B 1}| \hat{y}_{i}))\ \ \ \ \ \ \ \ \ \ (4)">
 </p>
 
 it is easy to see that the entropy rate <img src="https://render.githubusercontent.com/render/math?math=H(\hat{y}_{i %2B 1}|\hat{y}_{i})"> is equivalent to the rate <img src="https://render.githubusercontent.com/render/math?math=H(\hat{y}_{i %2B 1}|\hat{y}_{i}, \hat{x}_{i})"> when the next state of destination is independent of the source:
 
 <p align="center">
-<img src="https://render.githubusercontent.com/render/math?math=p(\hat{y}_{i %2B 1}|\hat{y}_{i}, \hat{x}_{i}) = p(\hat{y}_{i %2B 1}|\hat{y}_{i})">
+<img src="https://render.githubusercontent.com/render/math?math=p(\hat{y}_{i %2B 1}|\hat{y}_{i}, \hat{x}_{i}) = p(\hat{y}_{i %2B 1}|\hat{y}_{i})\ \ \ \ \ \ \ \ \ \ (5)">
 </p>
 
 Thus, in this case the transfer entropy reduces to zero.
@@ -61,19 +61,19 @@ Thus, in this case the transfer entropy reduces to zero.
 We can also define a generalized Markov property <img src="https://render.githubusercontent.com/render/math?math=p(\hat{x}_{i %2B 1}|\mathbf{\hat{x}_i^{(k_x)}}, \mathbf{\hat{y}_i^{(k_y)}}) = p(\hat{x}_{i %2B 1}|\mathbf{\hat{x}_i^{(k_x)}})"> relying on the Kullback-Leibler distance, where <img src="https://render.githubusercontent.com/render/math?math=\mathbf{\hat{x}_i^{(k_x)}} = (\hat{x}_i, \hat{x}_{i - 1}, ..., \hat{x}_{i-(k_x-1)})">:
 
 <p align="center">
-<img src="https://render.githubusercontent.com/render/math?math=T_{YX} = \sum p(\hat{x}_{i %2B 1}, \mathbf{\hat{x}_{i}^{(k_x)}}, \mathbf{\hat{y}_{i}^{(k_y)}}) log_2(\frac{p(\hat{x}_{i %2B 1}, \mathbf{\hat{x}_{i}^{(k_x)}}, \mathbf{\hat{y}_{i}^{(k_y)}}) p(\mathbf{\hat{x}_{i}^{(k_x)}})}{p(\mathbf{\hat{x}_{i}^{(k_x)}}, \mathbf{\hat{y}_{i}^{(k_y)}}) p(\hat{x}_{i %2B 1}, \mathbf{\hat{x}_{i}^{(k_x)}})})">
+<img src="https://render.githubusercontent.com/render/math?math=T_{YX} = \sum p(\hat{x}_{i %2B 1}, \mathbf{\hat{x}_{i}^{(k_x)}}, \mathbf{\hat{y}_{i}^{(k_y)}}) log_2(\frac{p(\hat{x}_{i %2B 1}, \mathbf{\hat{x}_{i}^{(k_x)}}, \mathbf{\hat{y}_{i}^{(k_y)}}) p(\mathbf{\hat{x}_{i}^{(k_x)}})}{p(\mathbf{\hat{x}_{i}^{(k_x)}}, \mathbf{\hat{y}_{i}^{(k_y)}}) p(\hat{x}_{i %2B 1}, \mathbf{\hat{x}_{i}^{(k_x)}})})\ \ \ \ \ \ \ \ \ \ (6)">
 </p>
 
 Also in this case, we can define the transfer entropy as the difference of these two conditional Shannon entropies:
 
 <p align="center">
-<img src="https://render.githubusercontent.com/render/math?math=T_{YX} = H(\hat{x}_{i %2B 1}|\mathbf{\hat{x}_{i}^{(k_x)}}) - H(\hat{x}_{i %2B 1}|\mathbf{\hat{x}_{i}^{(k_x)}}, \mathbf{\hat{y}_{i}^{(k_x)}})">
+<img src="https://render.githubusercontent.com/render/math?math=T_{YX} = H(\hat{x}_{i %2B 1}|\mathbf{\hat{x}_{i}^{(k_x)}}) - H(\hat{x}_{i %2B 1}|\mathbf{\hat{x}_{i}^{(k_x)}}, \mathbf{\hat{y}_{i}^{(k_x)}})\ \ \ \ \ \ \ \ \ \ (7)">
 </p>
 
 In addition to these definitions, it is necessary to set a horizon prediction to the variable <img src="https://render.githubusercontent.com/render/math?math=X"> (or <img src="https://render.githubusercontent.com/render/math?math=Y"> depending on the case). This horizon indicates how far in the future of <img src="https://render.githubusercontent.com/render/math?math=X"> will be analyzed and is symbolized by the parameter <img src="https://render.githubusercontent.com/render/math?math=h">. Let <img src="https://render.githubusercontent.com/render/math?math=x_{i %2B h}"> denote the value of <img src="https://render.githubusercontent.com/render/math?math=X"> at time instant <img src="https://render.githubusercontent.com/render/math?math=i %2B h">, that is, <img src="https://render.githubusercontent.com/render/math?math=h"> steps in the future from <img src="https://render.githubusercontent.com/render/math?math=i">, and <img src="https://render.githubusercontent.com/render/math?math=h"> is referred to as the prediction horizon. That is if <img src="https://render.githubusercontent.com/render/math?math=h = 1"> the method will always verify only one sample ahead of the present, over the whole time analysis. Meaning that, assuming <img src="https://render.githubusercontent.com/render/math?math=i"> instants as the time reference. The method will check whether or not the past of <img src="https://render.githubusercontent.com/render/math?math=Y"> is influencing the behavior of the <img src="https://render.githubusercontent.com/render/math?math=X"> variable in time instant <img src="https://render.githubusercontent.com/render/math?math=i %2B 1">.
 
 <p align="center">
-<img src="https://render.githubusercontent.com/render/math?math=T_{YX} = \sum p(\hat{x}_{i %2B h}, \mathbf{\hat{x}_{i}^{(k_x)}}, \mathbf{\hat{y}_{i}^{(k_y)}}) log_2(\frac{p(\hat{x}_{i %2B h}, \mathbf{\hat{x}_{i}^{(k_x)}}, \mathbf{\hat{y}_{i}^{(k_y)}}) p(\mathbf{\hat{x}_{i}^{(k_x)}})}{p(\mathbf{\hat{x}_{i}^{(k_x)}}, \mathbf{\hat{y}_{i}^{(k_y)}}) p(\hat{x}_{i %2B h}, \mathbf{\hat{x}_{i}^{(k_x)}})})          (6)">
+<img src="https://render.githubusercontent.com/render/math?math=T_{YX} = \sum p(\hat{x}_{i %2B h}, \mathbf{\hat{x}_{i}^{(k_x)}}, \mathbf{\hat{y}_{i}^{(k_y)}}) log_2(\frac{p(\hat{x}_{i %2B h}, \mathbf{\hat{x}_{i}^{(k_x)}}, \mathbf{\hat{y}_{i}^{(k_y)}}) p(\mathbf{\hat{x}_{i}^{(k_x)}})}{p(\mathbf{\hat{x}_{i}^{(k_x)}}, \mathbf{\hat{y}_{i}^{(k_y)}}) p(\hat{x}_{i %2B h}, \mathbf{\hat{x}_{i}^{(k_x)}})})\ \ \ \ \ \ \ \ \ \ (8)">
 </p>
 
 where for <img src="https://render.githubusercontent.com/render/math?math=h = 1"> and <img src="https://render.githubusercontent.com/render/math?math=k_x = k_y = 1"> is equivalent to the standard form of the transfer entropy based on Markov property not generalized.
