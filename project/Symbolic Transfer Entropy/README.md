@@ -80,9 +80,11 @@ where for <img src="https://render.githubusercontent.com/render/math?math=h = 1"
 
 **The dominant direction of the information flow can be inferred by calculating the difference between <img src="https://render.githubusercontent.com/render/math?math=T_{YX}"> and <img src="https://render.githubusercontent.com/render/math?math=T_{XY}">**. It is convenient to define the directionality index <img src="https://render.githubusercontent.com/render/math?math=T_{XY}^{S} = T_{YX} - T_{XY}">, which measures the balance of information flow in both directions. **This index quantifies the dominant direction of information flow and is expected to have positive values for undirectional couplings with <img src="https://render.githubusercontent.com/render/math?math=x"> (x-axis) as driver and negative values if <img src="https://render.githubusercontent.com/render/math?math=y"> (y-axis) is driving <img src="https://render.githubusercontent.com/render/math?math=x">**. For symmetric bidirectional couplings, we expect <img src="https://render.githubusercontent.com/render/math?math=T_{XY}^{S}"> to be null. In this case the matrix is symmetric, for this reason I show only a side of the matrix.
 
-### Searching for best window size (temporal lags) of the historical <img src="https://render.githubusercontent.com/render/math?math=X"> used for the future <img src="https://render.githubusercontent.com/render/math?math=Y"> prediction
+### Searching for the best window size of the historical <img src="https://render.githubusercontent.com/render/math?math=X"> (temporal lags) used for the future <img src="https://render.githubusercontent.com/render/math?math=Y"> prediction
 
-frfrfr
+Using the generalized formula of the transfer entropy, we can play with <img src="https://render.githubusercontent.com/render/math?math=k_x"> i.e., the window size of the historical <img src="https://render.githubusercontent.com/render/math?math=X"> used for the future <img src="https://render.githubusercontent.com/render/math?math=Y"> prediction, in order to answer to the optimal temporal lags of the predictor. A solution could be the estimation of the optimal <img src="https://render.githubusercontent.com/render/math?math=k_x"> as the minimum positive integer above which the change rate of the TE from <img src="https://render.githubusercontent.com/render/math?math=X"> to <img src="https://render.githubusercontent.com/render/math?math=Y"> decreases significantly [6].
+
+Our approah is analogous to 
 
 ## References
 
@@ -95,3 +97,7 @@ frfrfr
 [4]. "Measuring information transfer", T.Schreiber, 2000.
 
 [5]. "On Thermodynamic Interpretation of Transfer Entropy", Mikhail Prokopenko, Joseph T. Lizier and Don C. Price, 2013.
+
+[6]. "Direct Causality Detection via the Transfer Entropy Approach ", Ping Duan, Fan Yang, 2013.
+
+
