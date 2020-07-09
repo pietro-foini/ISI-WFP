@@ -1,5 +1,12 @@
 import pandas as pd
 
+# Python module.
+#
+#
+# Pietro Foini
+#
+# Year: 2020
+
 def corr_pairwise(df, method = None):
     # Define the correlation matrix to fill with values.
     CORR = pd.DataFrame(index = df.columns, columns = df.columns)

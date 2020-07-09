@@ -4,6 +4,13 @@ from itertools import permutations
 import pandas as pd
 import numpy as np
 
+# Python module.
+#
+#
+# Pietro Foini
+#
+# Year: 2020
+
 def calc_ste(X, Y, m = 3, h = 1, kx = 1, ky = 1):
     """Symbolic Transfer Entropy[1][2].
     
