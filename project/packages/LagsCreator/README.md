@@ -12,7 +12,7 @@ In order to better understand the functionality of the current module, let's fli
 <img src="./images/dataframe_flip.png" width="900">
 </p>
 
-In this case, we have three features (time-series), `A`, `B` and `C`. Supposing we would like to predict 4 steps ahead in the future of the time-series `A`. The time-series `A` becomes our `target` feature. We can complete the prediction through a *direct approach*: we train a model to predict in one fell swoop 4 points in the future (in practice, we set `single_step = False`). Now, we have to create lag-features for each time-series present in the dataframe. We provide to the module the `lags_dictionary` parameter. It is a python dictionary containing the lag values for each time-series, e.g., `lags_dictionary = {"A": 5, "B": 5, "C": 5}`. In this manner, we create the following training points:
+In this case, we have three features (time-series), `A`, `B` and `C`. Supposing we would like to predict 4 steps ahead in the future of the time-series `A`. The time-series `A` becomes our `target` feature. We can complete the prediction through a *direct approach*: we will train a model to predict in one fell swoop 4 points in the future (in practice, we set `single_step = False`). Now, we have to create lag-features for each time-series present in the dataframe. We provide to the module the `lags_dictionary` parameter. It is a python dictionary containing the lag values for each time-series, e.g., `lags_dictionary = {"A": 5, "B": 5, "C": 5}`. In this manner, we create the following training points:
 
 <p align="center">
 <img src="./images/roll3.gif" width="700">
