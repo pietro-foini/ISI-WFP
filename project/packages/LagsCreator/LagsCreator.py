@@ -147,7 +147,7 @@ class LagsCreator:
         return X, y
         
     def to_supervised(self, n_out, single_step = False, h = None, return_dataframe = False, validation = False, 
-                      feature_time = False):
+                      feature_time = False, return_single_level = False):
         """
         ***Main function***
  
@@ -166,6 +166,8 @@ class LagsCreator:
         validation: if you want to create validation points.
         feature_time: if you want to create a feature time to add as feature in the input samples. This parameter can be use 
            only if the 'single_step' and 'return_dataframe' mode are set.
+        return_single_level: if 'return_dataframe' is set, this parameter allows to have as output dataframes with a single level on
+           axis 1 merging column names levels.
            
         Return
         ----------
@@ -244,6 +246,12 @@ class LagsCreator:
             X_val, y_val = self.to_dataframe(X_val, y_val)
             # Define input samples test dataframes.
             X_test, _ = self.to_dataframe(X_test, None)
+            if return_single_level:
+                X_train.columns = X_train.columns.map(lambda x: " | ".join([str(i) for i in x]))
+                y_train.columns = y_train.columns.map(lambda x: " | ".join([str(i) for i in x]))
+                X_val.columns = X_val.columns.map(lambda x: " | ".join([str(i) for i in x]))
+                y_val.columns = y_val.columns.map(lambda x: " | ".join([str(i) for i in x]))
+                X_test.columns = X_test.columns.map(lambda x: " | ".join([str(i) for i in x]))
         else:
             # Define input samples training arrays removing the temporal information.
             X_train = X[:, :, 1:]
