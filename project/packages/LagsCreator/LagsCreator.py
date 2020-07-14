@@ -2,6 +2,13 @@ from rolling_window import rolling_window
 import numpy as np
 import pandas as pd
 
+# Python module.
+#
+#
+# Pietro Foini
+#
+# Year: 2020
+
 class LagsCreator:
     """LagsCreator
     
