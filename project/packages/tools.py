@@ -27,9 +27,10 @@ def find_multiple_sets(df):
     sets: a list of dataframes (or series).
     
     """
-    events = np.split(df, np.where(np.isnan(df.values))[0])
-    # Removing NaN entries.
-    events = [ev[~np.isnan(ev.values)] for ev in events if not isinstance(ev, np.ndarray)]
-    # Removing empty DataFrames.
-    sets = [ev.drop_duplicates() for ev in events if not ev.empty]
-    return sets
+    if isinstance(df, pd.DataFrame):
+        grps = df.isna().all(axis = 1).cumsum()
+    elif isinstance(df, pd.Series):
+        grps = df.isna().cumsum()
+    # Find all the sets.
+    dfs = [df.dropna() for _, df in df.groupby(grps) if not df.dropna().empty]
+    return dfs

@@ -147,7 +147,7 @@ class LagsCreator:
         return X, y
         
     def to_supervised(self, n_out, single_step = False, h = None, return_dataframe = False, validation = False, 
-                      feature_time = False, return_single_level = False):
+                      feature_time = False, return_single_level = False, dtype = object):
         """
         ***Main function***
  
@@ -261,13 +261,13 @@ class LagsCreator:
                 # Define input samples validation arrays removing the temporal information.
                 X_val = X_val[:, :, 1:]
                 # Define output samples validation arrays removing the temporal information.
-                y_val = y_val[:, 1, :]
+                y_val = y_val[:, 1, :] 
             else:
                 X_val, y_val = None, None
             # Define input samples test arrays removing the temporal information.
             X_test = X_test[:, :, 1:]
             
-        return X_train, y_train, X_val, y_val, X_test
+        return X_train.astype(dtype), y_train.astype(dtype), X_val.astype(dtype), y_val.astype(dtype), X_test.astype(dtype)
     
     def highlight_cells(self, x, y):
         """
