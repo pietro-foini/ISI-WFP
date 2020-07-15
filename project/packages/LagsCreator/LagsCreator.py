@@ -15,7 +15,7 @@ class LagsCreator:
     This module allows to create training/validation/test lag-features for time-series forecasting. It supports several 
     configurations to get the output into several format. The starting point for using this module is to have
     a dataframe with two levels on axis 1: the level 0 corresponding to the main group and the level 1 corresponding 
-    to the time-series. An advantage of this module is that it is possible to visualize the samples created during the precosse through 
+    to the time-series. An advantage of this module is that it is possible to visualize the samples created during the precess through 
     an highlighting of the cells of the dataframe.
     
     """
@@ -40,7 +40,7 @@ class LagsCreator:
         # Remove level 0 from the dataframe.
         group = group.droplevel(level = 0, axis = 1)
         
-        # Adjust the 'lags_dictionary' parameter.
+        # Check of the 'lags_dictionary' parameter.
         if target not in lags_dictionary.keys():
             raise ValueError("The target feature must be always included in the 'lags_dictionary' parameter.")
         # The features whose are not specified into 'lags_dictionary' are removed.
@@ -48,13 +48,13 @@ class LagsCreator:
         group = group.drop(columns = features_to_remove)
         # Define the features (the names of the time-series).
         features = group.columns
-        # Define static features (features, i.e. time-series, with lag value set to 0).
+        # Define static features among the features (features, i.e. time-series, with lag value set to 0).
         static_features = [key for (key, value) in lags_dictionary.items() if value == 0]
         
-        # Define the boolean mask for the creation of feature-lags foer each time-series.
-        # Add the reference size of the window (timestep dimension) as attribute of the class.
+        # Define the boolean mask for the creation of feature-lags for each time-series.
+        # Define the reference size of the window (timestep dimension).
         window_size = max(lags_dictionary.values())
-        # Create mask based on lags into 'lags_dictionary' over the input samples.
+        # Create mask based on lags into 'lags_dictionary' to pass over the input samples.
         mask = np.full(shape = (window_size, len(features)), fill_value = False)    
         for i, feature in enumerate(features):
             lags = lags_dictionary[feature]
@@ -159,15 +159,16 @@ class LagsCreator:
         ----------
         n_out: the maximum forecasting horizon ahead in the future. If 'single_step' is set, the parameter 'n_out' indicates 
            the size of the validation set.
-        single_step: if set, each prediction horizon is predicted independently of the others.
+        single_step: if set, each prediction horizon is predicted independently from the others.
         h: the independent forecasting horizon to predict for the 'single_step' mode. If 'single_step = False', the 'h' parameter
            is not taken into account.
         return_dataframe: the modality to set in order to have the outputs returned as pandas dataframes.
         validation: if you want to create validation points.
         feature_time: if you want to create a feature time to add as feature in the input samples. This parameter can be use 
-           only if the 'single_step' and 'return_dataframe' mode are set.
+           only if the 'single_step' and 'return_dataframe' modes are set.
         return_single_level: if 'return_dataframe' is set, this parameter allows to have as output dataframes with a single level on
-           axis 1 merging column names levels.
+           axis 1 merging column names levels. If 'return_dataframe = False', the 'return_single_level' parameter is not taken 
+           into account.
            
         Return
         ----------
@@ -181,7 +182,9 @@ class LagsCreator:
         # Check parameters.
         if single_step and h is None:
             raise ValueError("If 'single_step' is set, you must provide a value for the 'h' parameter.")
-        if h > n_out:
+        if not single_step and h is not None:
+            h = None
+        if h is not None and h > n_out:
             raise ValueError("The 'h' parameter must be not greater than 'n_out' parameter.")      
         if feature_time and (not single_step or not return_dataframe):
             raise ValueError("You can use the 'feature_time' only if you are working in the 'single_step' and 'return_dataframe' modes.")
@@ -238,36 +241,49 @@ class LagsCreator:
         self.y_val = y_val # It could be None if 'validation = False'.
         self.X_test = X_test
         
-        # In this last phase, the output format is changed if desired.
+        # In this last phase, the output format is changed if desired: array or dataframe outputs.
         if return_dataframe:
             # Define input and output samples training dataframes.
             X_train, y_train = self.to_dataframe(X, y)
+            # Change the type of the dataframe.
+            X_train = X_train.astype(dtype)
+            y_train = y_train.astype(dtype)
             # Define input and output samples validation dataframes.
             X_val, y_val = self.to_dataframe(X_val, y_val)
+            # Change the type of the dataframe.
+            if validation:
+                X_val = X_val.astype(dtype)
+                y_val = y_val.astype(dtype)
             # Define input samples test dataframes.
             X_test, _ = self.to_dataframe(X_test, None)
+            # Change the type of the dataframe.
+            X_test = X_test.astype(dtype)
+            # Save the name of the adminstrata as index for the test input sample.
+            X_test.index = [self.group_name]
+            # Flatten of the hierarchical multi-index on axis 1.
             if return_single_level:
                 X_train.columns = X_train.columns.map(lambda x: " | ".join([str(i) for i in x]))
                 y_train.columns = y_train.columns.map(lambda x: " | ".join([str(i) for i in x]))
-                X_val.columns = X_val.columns.map(lambda x: " | ".join([str(i) for i in x]))
-                y_val.columns = y_val.columns.map(lambda x: " | ".join([str(i) for i in x]))
+                if validation:
+                    X_val.columns = X_val.columns.map(lambda x: " | ".join([str(i) for i in x]))
+                    y_val.columns = y_val.columns.map(lambda x: " | ".join([str(i) for i in x]))
                 X_test.columns = X_test.columns.map(lambda x: " | ".join([str(i) for i in x]))
         else:
             # Define input samples training arrays removing the temporal information.
-            X_train = X[:, :, 1:]
+            X_train = X[:, :, 1:].astype(dtype)
             # Define output samples training arrays removing the temporal information.
-            y_train = y[:, 1, :]
+            y_train = y[:, 1, :].astype(dtype)
             if validation:
                 # Define input samples validation arrays removing the temporal information.
-                X_val = X_val[:, :, 1:]
+                X_val = X_val[:, :, 1:].astype(dtype)
                 # Define output samples validation arrays removing the temporal information.
-                y_val = y_val[:, 1, :] 
+                y_val = y_val[:, 1, :].astype(dtype) 
             else:
                 X_val, y_val = None, None
             # Define input samples test arrays removing the temporal information.
-            X_test = X_test[:, :, 1:]
+            X_test = X_test[:, :, 1:].astype(dtype)
             
-        return X_train.astype(dtype), y_train.astype(dtype), X_val.astype(dtype), y_val.astype(dtype), X_test.astype(dtype)
+        return X_train, y_train, X_val, y_val, X_test
     
     def highlight_cells(self, x, y):
         """
@@ -277,6 +293,8 @@ class LagsCreator:
         output sample y.
 
         """
+        # Define a group for style.
+        group_style = self.group.round(3).astype(str)
         # Pandas mask.
         m = pd.DataFrame(self.mask, index = x[:, 0], columns = self.features)
         # Getting (index, column) pairs for True elements of the boolean DataFrame.
@@ -285,9 +303,9 @@ class LagsCreator:
             cells_to_color_input_extra = m[m == False].stack().index.tolist()
         if y is not None:
             cells_to_color_output = y[0]
-            
+
         def draw(x):
-            df_styler  = self.group.copy()
+            df_styler  = group_style.copy()
             if self.validation:
                 df_styler.loc[-self.n_out:, self.target] = "color: red"
             # Set particular cell colors for the input.
@@ -304,7 +322,7 @@ class LagsCreator:
             return df_styler 
         
         # Highlight the following sample into the dataframe.
-        sample = self.group.style.apply(lambda x: draw(x), axis = None)
+        sample = group_style.style.apply(lambda x: draw(x), axis = None)
         return sample
         
     def visualization(self, boundaries = True):
