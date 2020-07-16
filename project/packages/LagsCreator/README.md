@@ -75,3 +75,21 @@ A last possible configuration is regarding the format of the outputs. So far the
 </p>
 
 As you can see, in this modality the static feature is managed to kept a single value at each training point (the rows of the output dataframe).
+
+## Visualization
+
+The LagsCreator module also provide a visualization function in order to better examine the samples created. Supposing to use the example dataframe `df` and we create the following samples:
+
+    creator = LagsCreator(df, lags_dict, "A")
+    X_train, y_train, X_val, y_val, X_test = creator.to_supervised(n_out = 4, single_step = True, return_dataframe = True, h = 2, 
+                                                                   validation = True, feature_time = True)
+                                                                   
+Now, we can visualize the samples created using the `visualization` function:
+
+    train, val, test = creator.visualization(boundaries = False)
+    
+If you want to see the 6-th training sample, we get it through the variable `train[5]`: 
+
+<p align="center">
+<img src="./images/visualization.png" width="200">
+</p>
