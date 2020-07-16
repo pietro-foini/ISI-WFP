@@ -293,8 +293,9 @@ class LagsCreator:
         output sample y.
 
         """
-        # Define a group for style.
-        group_style = self.group.round(3).astype(str)
+        # Define a group for style where the values inside the dataframe are converted to strings.
+        group_style = self.group.round(4).astype(str)
+
         # Pandas mask.
         m = pd.DataFrame(self.mask, index = x[:, 0], columns = self.features)
         # Getting (index, column) pairs for True elements of the boolean DataFrame.

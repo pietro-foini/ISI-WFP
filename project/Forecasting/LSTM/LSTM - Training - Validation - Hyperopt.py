@@ -6,17 +6,38 @@
 
 from keras import backend as K
 from keras.models import Sequential
-from keras.layers import Dense, LSTM
+from keras.layers import Dense, LSTM, RepeatVector, TimeDistributed, Activation
 from tqdm.keras import TqdmCallback
+from keras_tqdm import TQDMCallback
 from keras.callbacks import EarlyStopping
+import tensorflow as tf
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from IPython.display import clear_output
-import tensorflow as tf
 import os
 import shutil
 import pickle
+
+# Selection of the gpu.
+GPU = [0]
+os.environ["CUDA_VISIBLE_DEVICES"] = ",".join(str(x) for x in GPU)  
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3" 
+physical_devices = tf.config.list_physical_devices("GPU")
+tf.config.experimental.set_memory_growth(physical_devices[0], True)
+
+
+# In[1]:
+
+
+try:
+    __IPYTHON__
+except NameError:
+    # Not in IPython.
+    ipython = False
+else:
+    # In IPython.
+    ipython = True
 
 
 # In[2]:
@@ -32,13 +53,6 @@ from LagsCreator.LagsCreator import LagsCreator
 
 # In[3]:
 
-
-# Selection of the gpu.
-GPU = [0]
-os.environ["CUDA_VISIBLE_DEVICES"] = ",".join(str(x) for x in GPU)  
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3" 
-physical_devices = tf.config.list_physical_devices("GPU")
-tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 # Create workspace.
 dir = "./output"
@@ -93,7 +107,6 @@ target.index.freq = freq
 # In[8]:
 
 
-# Define 
 TEST_SIZE = 30
 FREQ = train.index.freq
 
@@ -108,12 +121,14 @@ TRAIN = train.copy()
 
 
 PROVINCES = TRAIN.columns.get_level_values(0).unique()
+PROVINCES
 
 
 # In[11]:
 
 
 PREDICTORS = TRAIN.columns.get_level_values(1).unique()
+PREDICTORS
 
 
 # ## Data source transformation
@@ -147,6 +162,7 @@ def normalization(group, feature_range):
 
 
 TRAIN_NORMALIZED = TRAIN.groupby(axis = 1, level = 1).apply(lambda x: normalization(x, (MIN, MAX)))
+TRAIN_NORMALIZED.head()
 
 
 # In[14]:
@@ -188,13 +204,13 @@ from sklearn.metrics import mean_squared_error
 
 # Define the PARAMETERS MODEL to which perform the grid search.
 space = {"lags": hp.randint("lags", 1, 120), 
-         "batch_size": hp.randint("batch_size", 128, 129)}
+         "batch_size": hp.randint("batch_size", 32, 500)}
 
 
 # In[18]:
 
 
-N_EPOCHS = 250
+N_EPOCHS = 500
 
 
 # In[19]:
@@ -203,8 +219,20 @@ N_EPOCHS = 250
 def network(timesteps, features, n_out):      
     model = Sequential()
 
+    # AUTOENCODE.
+    model.add(LSTM(8, return_sequences = False, batch_input_shape = (None, timesteps, features)))
+    model.add(RepeatVector(4))
+    model.add(LSTM(8, return_sequences = True))
+    model.add(TimeDistributed(Dense(features)))
+    model.add(Activation("linear"))
+
+    # STACKED MODEL.
+    model.add(LSTM(128, return_sequences = True, stateful = False))
+    model.add(LSTM(64, return_sequences = True, stateful = False))
+    model.add(LSTM(32, return_sequences = False, stateful = False))
+    
     # MODEL.
-    model.add(LSTM(100, return_sequences = False, batch_input_shape = (None, timesteps, features)))
+    #model.add(LSTM(10, return_sequences = False, batch_input_shape = (None, timesteps, features)))
 
     model.add(Dense(n_out))  
 
@@ -219,7 +247,7 @@ def hyperparameters(space):
         # Define the parameters to grid search.
         LAGS = int(space["lags"])
         BATCH_SIZE = int(space["batch_size"])
-        print("lags: %d, batch_size: %d" %(LAGS, BATCH_SIZE))
+        #print("lags: %d, batch_size: %d" %(LAGS, BATCH_SIZE))
 
         lags_dict = dict()
         # Define lags for each indicator.
@@ -259,9 +287,6 @@ def hyperparameters(space):
         X_val = np.concatenate(X_val_list)
         y_val = np.concatenate(y_val_list)
 
-        print("Training shape: X:", X_train.shape, "y:", y_train.shape)
-        print("Validation shape: X:", X_val.shape, "y:", y_val.shape)
-
         N_FEATURES = X_train.shape[2]
 
         # Model.
@@ -272,8 +297,12 @@ def hyperparameters(space):
         # Patient early stopping.
         es = EarlyStopping(monitor = "val_loss", mode = "min", verbose = 1, patience = 100)
         # Fit model.
-        history = model.fit(X_train, y_train, epochs = N_EPOCHS, validation_data = (X_val, y_val), 
-                            batch_size = BATCH_SIZE, verbose = 0, shuffle = True, callbacks = [es, TqdmCallback(verbose = 1)])
+        if ipython:
+            history = model.fit(X_train, y_train, epochs = N_EPOCHS, validation_data = (X_val, y_val), 
+                                batch_size = BATCH_SIZE, verbose = 0, shuffle = True, callbacks = [es, TqdmCallback(verbose = 1)])
+        else:
+            history = model.fit(X_train, y_train, epochs = N_EPOCHS, validation_data = (X_val, y_val), 
+                            batch_size = BATCH_SIZE, verbose = 0, shuffle = True, callbacks = [es, TQDMCallback(outer_description = "Loading:", leave_inner = False, leave_outer = False)])
 
         # Save the number of epochs at which fit stop due to early stopping.
         number_of_epochs_it_ran = len(history.history["loss"])  
@@ -289,20 +318,23 @@ def hyperparameters(space):
         filename = dir + "/grid_search.csv"
         df_space.to_csv(filename, index = False, header = (not os.path.exists(filename)), mode = "a")
 
-        clear_output(wait = True)
+        if ipython:
+            clear_output(wait = True)
         K.clear_session()
 
-        # Plot result of the training and validation.
-        #plt.plot(history.history["loss"])
-        #plt.plot(history.history["val_loss"])
-        #plt.title("model loss")
-        #plt.ylabel("loss")
-        #plt.xlabel("epoch")
-        #plt.legend(["train", "val"], loc = "upper left")
-        #plt.show()
+        if ipython:
+            # Plot result of the training and validation.
+            plt.plot(history.history["loss"])
+            plt.plot(history.history["val_loss"])
+            plt.title("model loss")
+            plt.ylabel("loss")
+            plt.xlabel("epoch")
+            plt.legend(["train", "val"], loc = "upper left")
+            plt.show()
     except:
-        val_loss = np.inf     
-        clear_output(wait = True)
+        val_loss = np.inf  
+        if ipython:
+            clear_output(wait = True)
         K.clear_session()
 
     return {"loss": val_loss, "status": STATUS_OK}
@@ -315,7 +347,7 @@ trials = Trials()
 best = fmin(fn = hyperparameters,
             space = space,
             algo = tpe.suggest,
-            max_evals = 150,
+            max_evals = 300,
             trials = trials)
 
 # Save the trials into a file.
