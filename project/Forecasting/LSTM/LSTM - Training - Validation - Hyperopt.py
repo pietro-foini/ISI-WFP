@@ -1,16 +1,15 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[2]:
 
 
 from keras import backend as K
 from keras.models import Sequential
-from keras.layers import Dense, LSTM, RepeatVector, TimeDistributed, Activation
+from keras.layers import Dense, LSTM, Dropout, Activation
 from tqdm.keras import TqdmCallback
 from keras_tqdm import TQDMCallback
 from keras.callbacks import EarlyStopping
-import tensorflow as tf
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -27,7 +26,7 @@ physical_devices = tf.config.list_physical_devices("GPU")
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 
-# In[1]:
+# In[3]:
 
 
 try:
@@ -40,7 +39,7 @@ else:
     ipython = True
 
 
-# In[2]:
+# In[4]:
 
 
 # Add the python path to the folder containing some useful custom packages.
@@ -51,7 +50,7 @@ from tools import find_multiple_sets
 from LagsCreator.LagsCreator import LagsCreator
 
 
-# In[3]:
+# In[5]:
 
 
 # Create workspace.
@@ -65,13 +64,19 @@ else:
 
 # ## Dataset
 
-# In[4]:
+# In[6]:
 
 
-PATH_TO_DATA_FOLDER = "../../Dataset time-series/"
+COUNTRY = "Yemen"
 
 
-# In[5]:
+# In[7]:
+
+
+PATH_TO_DATA_FOLDER = "../../Dataset time-series/data/" + COUNTRY + "/"
+
+
+# In[8]:
 
 
 # Load the dataset of the training sets.
@@ -82,7 +87,7 @@ freq = "D"
 train.index.freq = freq
 
 
-# In[6]:
+# In[9]:
 
 
 # Load the dataset of the test sets.
@@ -93,7 +98,7 @@ freq = "D"
 test.index.freq = freq
 
 
-# In[7]:
+# In[10]:
 
 
 # Load the dataset of the whole time-series of the fcs indicator.
@@ -104,27 +109,27 @@ freq = "D"
 target.index.freq = freq
 
 
-# In[8]:
+# In[11]:
 
 
 TEST_SIZE = 30
 FREQ = train.index.freq
 
 
-# In[9]:
+# In[12]:
 
 
 TRAIN = train.copy()
 
 
-# In[10]:
+# In[13]:
 
 
 PROVINCES = TRAIN.columns.get_level_values(0).unique()
 PROVINCES
 
 
-# In[11]:
+# In[14]:
 
 
 PREDICTORS = TRAIN.columns.get_level_values(1).unique()
@@ -135,7 +140,7 @@ PREDICTORS
 # 
 # I decide to normalize the data among the provinces considering indicator by indicator and considering only the training sets.
 
-# In[12]:
+# In[15]:
 
 
 global SCALERS
@@ -158,21 +163,21 @@ def normalization(group, feature_range):
     return group_scaled
 
 
-# In[13]:
+# In[16]:
 
 
 TRAIN_NORMALIZED = TRAIN.groupby(axis = 1, level = 1).apply(lambda x: normalization(x, (MIN, MAX)))
 TRAIN_NORMALIZED.head()
 
 
-# In[14]:
+# In[17]:
 
 
 # Plot time-series.
 #TsIP(TRAIN_NORMALIZED).interactive_plot_df(title = "Training sets", matplotlib = False, style = "lines")
 
 
-# In[15]:
+# In[18]:
 
 
 def denormalization(group_scaled, indicator, feature_range, scalers):
@@ -185,7 +190,7 @@ def denormalization(group_scaled, indicator, feature_range, scalers):
     return group
 
 
-# In[16]:
+# In[19]:
 
 
 # Get the training and test sets.
@@ -196,7 +201,7 @@ TEST_TARGET_SETS = find_multiple_sets(test)
 # ## Training & Validation
 # ### Parameters grid search
 
-# In[17]:
+# In[25]:
 
 
 from hyperopt import hp, fmin, tpe, STATUS_OK, Trials
@@ -207,39 +212,31 @@ space = {"lags": hp.randint("lags", 1, 120),
          "batch_size": hp.randint("batch_size", 32, 500)}
 
 
-# In[18]:
+# In[26]:
 
 
 N_EPOCHS = 500
 
 
-# In[19]:
+# In[27]:
 
 
 def network(timesteps, features, n_out):      
     model = Sequential()
 
-    # AUTOENCODE.
-    model.add(LSTM(8, return_sequences = False, batch_input_shape = (None, timesteps, features)))
-    model.add(RepeatVector(4))
-    model.add(LSTM(8, return_sequences = True))
-    model.add(TimeDistributed(Dense(features)))
-    model.add(Activation("linear"))
-
-    # STACKED MODEL.
-    model.add(LSTM(128, return_sequences = True, stateful = False))
-    model.add(LSTM(64, return_sequences = True, stateful = False))
-    model.add(LSTM(32, return_sequences = False, stateful = False))
-    
     # MODEL.
-    #model.add(LSTM(10, return_sequences = False, batch_input_shape = (None, timesteps, features)))
+    model.add(LSTM(128, return_sequences = True, batch_input_shape = (None, timesteps, features)))
+    model.add(Activation("relu"))
+    model.add(Dropout(0.1))
+    model.add(LSTM(32, return_sequences = False, batch_input_shape = (None, timesteps, features)))
+    model.add(Activation("relu"))
 
     model.add(Dense(n_out))  
 
     return model
 
 
-# In[22]:
+# In[28]:
 
 
 def hyperparameters(space):      
@@ -247,7 +244,6 @@ def hyperparameters(space):
         # Define the parameters to grid search.
         LAGS = int(space["lags"])
         BATCH_SIZE = int(space["batch_size"])
-        #print("lags: %d, batch_size: %d" %(LAGS, BATCH_SIZE))
 
         lags_dict = dict()
         # Define lags for each indicator.
@@ -264,6 +260,16 @@ def hyperparameters(space):
         lags_dict["Lon"] = LAGS
         lags_dict["Population"] = LAGS
         lags_dict["Ramadan"] = LAGS
+
+        # Randomly select only some predictors.
+        predictors = list(np.random.choice(PREDICTORS, size = np.random.randint(len(PREDICTORS) + 1), replace = False))
+        if "FCS" not in predictors:
+            predictors.append("FCS")      
+        for k,v in lags_dict.items():
+            if k not in predictors:
+                lags_dict[k] = None
+                
+        print("lags: %d, batch_size: %d, n_predictors: %d" %(LAGS, BATCH_SIZE, len(predictors)))
 
         X_train_list, y_train_list, X_val_list, y_val_list = list(), list(), list(), list()
         # Create training and validation points starting from the training sets.
@@ -286,6 +292,9 @@ def hyperparameters(space):
         y_train = np.concatenate(y_train_list)
         X_val = np.concatenate(X_val_list)
         y_val = np.concatenate(y_val_list)
+
+        #print("Training shape: X:", X_train.shape, "y:", y_train.shape)
+        #print("Validation shape: X:", X_val.shape, "y:", y_val.shape)
 
         N_FEATURES = X_train.shape[2]
 
@@ -311,6 +320,7 @@ def hyperparameters(space):
 
         # Recursive save results.
         results = space.copy()
+        results.update(lags_dict)
         results["epoch"] = number_of_epochs_it_ran
         results["val_loss"] = val_loss
         results["train_loss"] = train_loss
@@ -332,22 +342,22 @@ def hyperparameters(space):
             plt.legend(["train", "val"], loc = "upper left")
             plt.show()
     except:
-        val_loss = np.inf  
+        val_loss = np.inf     
         if ipython:
-            clear_output(wait = True)
+             clear_output(wait = True)
         K.clear_session()
 
     return {"loss": val_loss, "status": STATUS_OK}
 
 
-# In[23]:
+# In[30]:
 
 
 trials = Trials()
 best = fmin(fn = hyperparameters,
             space = space,
             algo = tpe.suggest,
-            max_evals = 300,
+            max_evals = 1000,
             trials = trials)
 
 # Save the trials into a file.

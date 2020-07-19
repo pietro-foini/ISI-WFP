@@ -43,8 +43,9 @@ class LagsCreator:
         # Check of the 'lags_dictionary' parameter.
         if target not in lags_dictionary.keys():
             raise ValueError("The target feature must be always included in the 'lags_dictionary' parameter.")
-        # The features whose are not specified into 'lags_dictionary' are removed.
-        features_to_remove = list(set(list(group.columns)) - set(list(lags_dictionary.keys())))
+        # The features whose are specified into 'lags_dictionary' with None values are removed (not considered as predictors).        
+        features_to_remove = [k for k,v in lags_dictionary.items() if v == None]
+        lags_dictionary = {k: v for k,v in lags_dictionary.items() if v is not None}
         group = group.drop(columns = features_to_remove)
         # Define the features (the names of the time-series).
         features = group.columns
