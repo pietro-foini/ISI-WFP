@@ -416,3 +416,94 @@ class TsIP:
                 out = widgets.interactive_output(self.plot_df_level_4, {"name1": w1, "name2": w2, "name3": w3, "graph": w4, "df": fixed(self.df), "df2": fixed(self.df2)})
                 display(hbox, w4, out)    
    
+    def interactive_plot_predictions(self, quantiles = True, title = None, matplotlib = False, yaxis = None, style = "lines"):
+        """
+        ***Main function***
+        
+        This main function allows to interactively plot the predictions statistic of time-series stored into a multi-index 
+        columns dataframe with two levels. For each group of the level 0, the time-series into the level 1 must be:
+        ['predicted_mean', 'original', 'predicted_quantile_25', 'predicted_quantile_75'].
+        
+        Parameters
+        ----------
+        quantiles: if you want to plot the predicted quantiles.
+        title: the title to add to the figures. 
+        yaxis: a string value to add on y axis.
+        style: the style of the plots. It can be 'lines' or 'lines+markers'.
+        matplotlib: if you want to use matplotlib (True) or plotly (False) library to visualize the time-series.
+        comparison: if you want to compare the time-series of two equal hierarchical dataframes (df and df2).
+           
+       """
+        # Define the parameters as attributes of the class.
+        self.quantiles = quantiles
+        self.title = title
+        self.yaxis = yaxis
+        self.style = style
+        self.matplotlib = matplotlib 
+        
+        def plot_statistic_prediction(name, df):
+            # Select the subdataframe thanks to an interactive button.
+            group = df[name]
+            
+            if self.matplotlib:
+                fig, ax = plt.subplots(figsize = (20, 7))
+                
+                # Define the style for matplotlib library.
+                if self.style == "lines+markers":
+                    style = ".-"
+                else:
+                    style = "-" 
+                    
+                # Plot entire original serie.
+                group["original"].plot(ax = fig.gca(), color = "#1281FF", label = "original", style = style)
+                # Plot predicted serie.
+                group["predicted_mean"].plot(ax = fig.gca(), color = "#FF8F17", label = "predicted", style = style)
+                # Plot quantiles
+                if self.quantiles:
+                    ax.fill_between(x = group["predicted_mean"].index, y1 = group["predicted_quantile_25"], y2 = group["predicted_quantile_75"], color = "#B6B6B6", alpha = 0.5)
+                # Set legend.
+                ax.legend(title = "Statistics", loc = "center left", bbox_to_anchor = (1.0, 0.5))
+                # Set axis names.
+                ax.set_ylabel(self.yaxis, fontsize = 10)
+                ax.set_xlabel("Datetime", fontsize = 10)
+                # Set title.
+                ax.set_title(self.title, fontsize = 15)
+                ax.autoscale()
+                plt.show()
+            else:
+                # Create figure.
+                fig = go.Figure()
+                # Plot quantiles.
+                if self.quantiles:
+                    fig.add_trace(go.Scatter(x = group["predicted_quantile_25"].index, y = group["predicted_quantile_25"], 
+                                             name = "quantile 25", fill = None, mode = "lines", 
+                                             line = dict(width = .5, color = "#B6B6B6")))
+                    fig.add_trace(go.Scatter(x = group["predicted_quantile_75"].index, y = group["predicted_quantile_75"], 
+                                             name = "quantile 75", fill = "tonexty", mode = "lines", 
+                                             line = dict(width = .5, color = "#B6B6B6")))
+                # Plot original serie.
+                fig.add_trace(go.Scatter(x = group["original"].index, y = group["original"], mode = self.style, 
+                                         name = self.title, legendgroup = self.title, 
+                                         line = dict(width = 1.5, color = "#1281FF")))
+                # Plot predicted serie.
+                fig.add_trace(go.Scatter(x = group["predicted_mean"].index, y = group["predicted_mean"], 
+                                         name = "prediction", mode = self.style, line = dict(width = 1.5, color = "#FF8F17")))
+
+                # Edit the layout of the y-axis.
+                fig.update_layout(yaxis_title = dict(text = self.yaxis, font = dict(size = 10)))
+                # Edit the layout of the title.
+                fig.update_layout(title = dict(text = self.title, y = 0.9, x = 0.5))
+                # Add range slider on x axis.
+                fig.update_layout(xaxis = dict(title = "Datetime", rangeselector = dict(), rangeslider = dict(visible = True), 
+                                               type = "date"))
+                fig.show()
+                
+        # 2 LEVELS, AXIS 1.
+        # Create figure.
+        w = widgets.ToggleButtons(options = self.df.columns.get_level_values(0).unique(), 
+                                  description = self.df.columns.get_level_values(0).name, 
+                                  disabled = False)
+        p = interact(plot_statistic_prediction, name = w, df = fixed(self.df))       
+               
+
+
