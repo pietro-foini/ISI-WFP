@@ -1,10 +1,10 @@
 # Lags-Creator
 
-This module allows to create *training/validation/test* lag-features for time-series forecasting. It supports several configurations that you can change to get the desired output format. The starting point for using this module is to have a dataframe `df` with two levels on axis 1: the level 0 corresponding to the main group and the level 1 corresponding to the time-series. For example, let's take the following dataframe:
+This module allows to create training/validation/test lag-features samples for time-series forecasting purposes. It supports several configurations that you can change to get the desired output format. The starting point for using this module is to have a dataframe `df` with two levels on axis 1: the level 0 corresponding to the single main group and the level 1 corresponding to the time-series. For example, let's take the following dataframe:
 
 <img src="./images/dataframe.png" width="200">
 
-N.B. The dataframe `df` need to have an appropriate pandas datetime index.
+N.B. The dataframe `df` need to have a pandas datetime index with an appropriate frequency set.
 
 In order to better understand the functionality of the current module, let's flip the dataframe for explanation purposes only:
 
@@ -64,7 +64,7 @@ where we have set `lags_dictionary = {"A": 3, "B": 0, "C": 2}`. The procedure is
 <img src="./images/roll7.gif" width="700">
 </p>
 
-A last possible configuration is regarding the format of the outputs. So far the returned outputs we talked about are numpy arrays. Now, setting the parameter `return_dataframe = True`, `single_step = False`, `lags_dictionary = {"A": 3, "B": 0, "C": 2}` and without validation:
+A last possible configuration is regarding the format of the outputs. You can arrange the lag-features of each sample over an unique row through the `row_output` parameter. So far the returned outputs we talked about are numpy arrays. Now, setting the parameter `return_dataframe = True`, `row_output = True`, `single_step = False`, `lags_dictionary = {"A": 3, "B": 0, "C": 2}` and without validation:
 
 <p align="center">
 <img src="./images/return_dataframe_x.png" width="300">
@@ -78,11 +78,10 @@ As you can see, in this modality the static feature is managed to kept a single 
 
 ## Visualization
 
-The LagsCreator module also provide a visualization function in order to better examine the samples created. Supposing to use the example dataframe `df` and we create the following samples:
+The LagsCreator module also provide a visualization function in order to better examine the samples created. Supposing to use the example dataframe `df` and we create the following samples using the `lags_dictionary = {"A": 3, "B": 0, "C": 2}`:
 
-    creator = LagsCreator(df, lags_dict, "A")
-    X_train, y_train, X_val, y_val, X_test = creator.to_supervised(n_out = 4, single_step = True, return_dataframe = True, h = 2, 
-                                                                   validation = True, feature_time = True)
+    creator = LagsCreator(df, lags_dict, "A", n_out = 4, return_dataframe = False, row_output = False, feature_time = False, single_step = True)
+    X_train, y_train, X_val, y_val, X_test = creator.to_supervised(h = 2, validation = False)
                                                                    
 Now, we can visualize the samples created using the `visualization` function:
 

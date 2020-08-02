@@ -12,14 +12,13 @@ import pandas as pd
 class LagsCreator:
     """LagsCreator
     
-    This module allows to create training/validation/test lag-features for time-series forecasting. It supports several 
-    configurations to get the output into several format. The starting point for using this module is to have
-    a dataframe with two levels on axis 1: the level 0 corresponding to the main group and the level 1 corresponding 
-    to the time-series. An advantage of this module is that it is possible to visualize the samples created during the precess 
-    through an highlighting of the cells of the dataframe.
+    This module allows to create training/validation/test lag-features samples for time-series forecasting purposes. 
+    The module supports different configurations to get the outputs into several formats. An advantage of this module is 
+    to visualize the lag-features samples created through an highlighting of the cells of the dataframe.
     
     """
-    def __init__(self, group, lags_dictionary, target, n_out, return_dataframe = False):
+    def __init__(self, group, lags_dictionary, target, n_out, return_dataframe = False, row_output = False, 
+                 feature_time = False, single_step = False):
         """
         ***Initialization function***
  
@@ -27,46 +26,78 @@ class LagsCreator:
         
         Parameters
         ----------
-        group: a pandas dataframe with hierarchical multi-index on axis 1 (more precisely two levels) where the time-series are stored. 
-           The dataframe must have as index a single pandas datetime column with an appropriate frequency set. 
-        lags_dictionary: a python dictionary containing the lag values corresponding to each time-series (the names of the time-series 
-           will be the keys of the dictionary).
-        target: a python string containing the name of the time-series that you want to predict. The target variable must always present
-           also into the 'lags_dictionary' parameter.
-        n_out: the maximum forecasting horizon ahead in the future (or/and the size of the validation set).
+        group: a pandas dataframe with two hierarchical multi-index on axis 1: the level 0 corresponding to a single main group and 
+           the level 1 corresponding to single/multiple time-series. The dataframe must have as index a pandas datetime column 
+           with an appropriate frequency set. 
+        lags_dictionary: a dictionary containing the lag values corresponding to each time-series (the names of the time-series 
+           will be the keys of the dictionary). If you dont't want to use a time-series, the corresponding value in the 
+           dictionary must be set to 'None'.
+        target: a string containing the name of the time-series that you want to predict. The target variable must be present
+           into the 'lags_dictionary'.
+        n_out: the maximum forecasting horizon ahead in the future.
         return_dataframe: the modality to set in order to have the outputs returned as pandas dataframes.
+        row_output: the modality to set in order to arrange the lag-features of each sample over an unique row. 
+        feature_time: if you want to create a feature time to add as feature in the input samples. This parameter can be use 
+           only if the 'single_step' and 'row_output' modes are set.
+        single_step: if set, each prediction horizon is predicted independently from the others.
            
-        """
-        # Define the name of the group (level 0 name on axis 1).
+        """        
+        # Define the name of the group (name of the column on axis 1 and level 0).
         group_name = group.columns.get_level_values(0).unique()
         # Remove level 0 of the dataframe on axis 1.
         group = group.droplevel(level = 0, axis = 1)
         
-        # Check of the 'lags_dictionary' parameter.
+        # Check parameters.
+        if feature_time and (not single_step or not row_output):
+            raise ValueError("You can use the 'feature_time' only if you are working in the 'single_step' and 'row_output' modes.")
+        if return_dataframe and not row_output:
+            raise ValueError("If 'return_dataframe' is set, you must work using the 'row_output' mode.")
         if target not in lags_dictionary.keys():
-            raise ValueError("The target feature must be always included in the 'lags_dictionary' parameter.")
+            raise ValueError("The target feature must be always included in the 'lags_dictionary' parameter in order to be a predictor.")
+        if set(lags_dictionary.keys()) != set(group.columns):
+            raise ValueError("You have to provide a lag value for each time-series stored in the input dataframe. Check the 'lags_dictionary' parameter.")
+            
         # The features whose are specified into 'lags_dictionary' with None values are removed (not considered as predictors).        
         features_to_remove = [k for k,v in lags_dictionary.items() if v is None]
+        # Define the features that are kept.
         lags_dictionary = {k: v for k,v in lags_dictionary.items() if v is not None}
-        group = group.drop(columns = features_to_remove)
-        # Define the features (the names of the time-series).
-        features = group.columns
         # Define static features among the features (features, i.e. time-series, with lag value set to 0).
         static_features = [k for k,v in lags_dictionary.items() if v == 0]
+        # Delete unused features.
+        group = group.drop(columns = features_to_remove)        
+        # Define the features (the names of the time-series).
+        features = group.columns
         
-        # Define the boolean mask for the creation of feature-lags for each time-series.
-        # Define the reference size of the window (timestep dimension).
+        # Define the boolean mask for the creation of lag-features for the time-series.
+        # Define the reference size of the window (time-step dimension).
         window_size = max(lags_dictionary.values())
         # Create mask based on lags into 'lags_dictionary' to pass over the input samples.
         mask = np.full(shape = (window_size, len(features)), fill_value = False)    
         for i, feature in enumerate(features):
-            if return_dataframe and feature in static_features:
+            if row_output and feature in static_features:
                 mask[:, i][-1] = True
             else:
                 lags = lags_dictionary[feature]
-                mask[:, i][-lags:] = True            
-
-        # Create column names for the features lags for dataframe output format.
+                mask[:, i][-lags:] = True     
+                
+        # Create input samples.
+        # Rolling a no masked window over the dataframe based on the maximum value of the 'lags_dictionary'.
+        X = rolling_window(group.reset_index().values, window_size, axes = 0).swapaxes(1, 2)
+        # Add the mask to the input samples based on lags.
+        # Add the temporal information to the mask in order to always mantain the temporal information.
+        mask_with_time = np.concatenate([np.expand_dims(np.array([True]*window_size), 1), mask], axis = 1)
+        # Expand the mask to all the samples.
+        mask_with_time = np.tile(mask_with_time, (X.shape[0], 1, 1))
+        # Define input samples with defined lags (with also temporal information).
+        X = np.ma.masked_array(X, mask = ~mask_with_time, fill_value = 0).filled(np.nan)
+        
+        # Create output samples.
+        if single_step:
+            y = rolling_window(group[target].reset_index().values[window_size:], 1, axes = 0)
+        else:
+            y = rolling_window(group[target].reset_index().values[window_size:], n_out, axes = 0)                        
+     
+        # Create column names for the features lags for dataframe output format if selected.
         if return_dataframe:
             # Input columns.
             columns_input = list()
@@ -78,21 +109,27 @@ class LagsCreator:
                 else:
                     columns = ["%s(t)" % feature if i == 1 else "%s(t-%d)" % (feature,i-1) for i in range(sum(feature_mask), 0, -1)]
                     columns_input.extend(columns)
+            if feature_time:
+                columns_input.extend(["Day", "Month", "Year"])    
             # Output columns.
             columns_output = ["x(t+%d)" % (i+1) for i in range(n_out)]
         else:
             columns_input = None
-            columns_output = None
-
+            columns_output = None  
+        
         # Define some attributes of the class.
+        self.X = X
+        self.y = y
         self.group_name = group_name
         self.group = group
         self.n_out = n_out
         self.target = target
-        self.features = features
-        self.window_size = window_size
         self.mask = mask
+        self.features = features
         self.return_dataframe = return_dataframe
+        self.single_step = single_step
+        self.feature_time = feature_time
+        self.row_output = row_output
         self.columns_input = columns_input
         self.columns_output = columns_output
     
@@ -101,6 +138,39 @@ class LagsCreator:
         ***Sub-function***
  
         This function allows to convert the input and output samples into dataframes format.
+        
+        Parameters
+        ----------
+        X: the input samples.
+        y: the output samples.
+
+        """
+        # Create dataframe of output samples.
+        if y is not None:
+            if self.single_step:
+                columns_output = [self.columns_output[self.h-1]]
+            else:
+                columns_output = self.columns_output
+            y = pd.DataFrame(y, columns = columns_output)
+            y.columns.name = "Target|Prediction horizon"
+        else:
+            y = None
+            
+        # Create dataframe of input samples.
+        if X is not None:
+            # Create dataframe of input samples. 
+            X = pd.DataFrame(X, columns = self.columns_input)                 
+            X.columns.name = "Features|Lags"
+        else:
+            X = None
+
+        return X, y
+    
+    def to_row_output(self, X, y):
+        """
+        ***Sub-function***
+ 
+        This function allows to convert the input and output samples into row output format.
         
         Parameters
         ----------
@@ -114,13 +184,6 @@ class LagsCreator:
             dates = y[:, 0, :].flatten()
             # Not consider temporal information.
             y = y[:, 1, :]
-            # Create columns values.
-            if self.single_step:
-                columns_output = [self.columns_output[self.h-1]]
-            else:
-                columns_output = self.columns_output
-            y = pd.DataFrame(y, columns = columns_output)
-            y.columns.name = "Target|Prediction horizon"
         else:
             y = None
             
@@ -133,8 +196,6 @@ class LagsCreator:
             delnan_mask = np.frompyfunc(lambda i: i is np.nan, 1, 1)(X).astype(bool)
             X = np.ma.masked_array(X, mask = delnan_mask)
             X = np.ma.compress_rows(X.T).T
-            # Create dataframe of input samples.    
-            X = pd.DataFrame(X, columns = self.columns_input)
 
             # Add the temporal information to the input samples.
             if self.feature_time:
@@ -144,36 +205,31 @@ class LagsCreator:
                     years = [date.year for date in dates]
                     # Create feature time.
                     dates = np.stack([days, months, years], axis = 1)
-                    dates = pd.DataFrame(dates, columns = ["Day", "Month", "Year"])
-                    # Add to the dataframe.
-                    X = pd.concat([X, dates], axis = 1)
+                    # Add to the data.
+                    X = np.concatenate([X, dates], axis = 1)
                 else:
-                    # For the test samples.
-                    X.loc[0, "Day"] = (self.group.index[-1] + (self.h-1)*self.group.index.freq).day
-                    X.loc[0, "Month"] = (self.group.index[-1] + (self.h-1)*self.group.index.freq).month
-                    X.loc[0, "Year"] = (self.group.index[-1] + (self.h-1)*self.group.index.freq).year                   
-            X.columns.name = "Features|Lags"
+                    day = (self.group.index[-1] + (self.h-1)*self.group.index.freq).day
+                    month = (self.group.index[-1] + (self.h-1)*self.group.index.freq).month
+                    year = (self.group.index[-1] + (self.h-1)*self.group.index.freq).year 
+                    dates = np.array([[day], [month], [year]]).transpose()
+                    X = np.concatenate([X, dates], axis = 1)
         else:
             X = None
 
         return X, y
         
-    def to_supervised(self, single_step = False, h = None, validation = False, feature_time = False, dtype = object):
+    def to_supervised(self, h = None, validation = False, dtype = object):
         """
         ***Main function***
  
         This function allows to create training/validation/test samples to use for time-series forecasting purposes.
-        The main output format difference is determined by the 'return_dataframe' parameter. If set, the outputs are 
-        rearranged into pandas dataframes otherwise the output are returned as numpy arrays.
         
         Parameters
         ----------   
-        single_step: if set, each prediction horizon is predicted independently from the others.
         h: the independent forecasting horizon to predict for the 'single_step' mode. If 'single_step = False', the 'h' parameter
            is not taken into account.      
-        validation: if you want to create validation points.
-        feature_time: if you want to create a feature time to add as feature in the input samples. This parameter can be use 
-           only if the 'single_step' and 'return_dataframe' modes are set.
+        validation: if you want to create validation samples.
+        dtype: the type of the output elements.
            
         Return
         ----------
@@ -185,84 +241,63 @@ class LagsCreator:
     
         """
         # Check parameters.
-        if single_step and h is None:
+        if self.single_step and h is None:
             raise ValueError("If 'single_step' is set, you must provide a value for the 'h' parameter.")
-        if not single_step and h is not None:
-            h = None
         if h is not None and h > self.n_out:
             raise ValueError("The 'h' parameter must be not greater than 'n_out' parameter.")      
-        if feature_time and (not single_step or not self.return_dataframe):
-            raise ValueError("You can use the 'feature_time' only if you are working in the 'single_step' and 'return_dataframe' modes.")
-    
-        # Define attributes of the class.
-        self.single_step = single_step
+        
+        # Define some attributes of the class.
         self.h = h
         self.validation = validation
-        self.feature_time = feature_time
 
-        # Rolling a no masked window over the dataframe based on the maximum value of the 'lags_dictionary'.
-        # Create input samples.
-        X = rolling_window(self.group.reset_index().values, self.window_size, axes = 0).swapaxes(1, 2)
-        # Add the mask to the input samples based on lags.
-        # Add the temporal information to the mask in order to always mantain the temporal information.
-        temporal_mask = np.expand_dims(np.array([True]*self.window_size), 1)
-        mask = np.concatenate([temporal_mask, self.mask], axis = 1)
-        # Expand the mask to all the samples.
-        mask = np.tile(mask, (X.shape[0], 1, 1))
-        # Define input samples with defined lags (with also temporal information).
-        X = np.ma.masked_array(X, mask = ~mask, fill_value = 0).filled(np.nan)
-        
-        # Create output samples.
-        if single_step:
-            y = rolling_window(self.group[self.target].reset_index().values[self.window_size + h-1:], 1, axes = 0)
-        else:
-            y = rolling_window(self.group[self.target].reset_index().values[self.window_size:], self.n_out, axes = 0)
-        
         # Splitting of the input X samples and the output y samples into training/validation/test.
         # Define the test sample input.
-        X_test = X[-1:]
+        X_test = self.X[-1:]
         # Define the training and validation samples input and outputs.
         if validation:
-            if single_step:
-                y_val = y[-self.n_out:]
-                X_val = X[-(self.n_out+h):][:self.n_out]
-                y = y[:-self.n_out]
-                X = X[:-(self.n_out+h)]
+            if self.single_step:
+                y_val = self.y[-self.n_out:]
+                X_val = self.X[-(self.n_out+h):][:self.n_out]
+                y = self.y[h-1:-self.n_out]
+                X = self.X[:-(self.n_out+h)]
             else:
-                y_val = y[-1:]
-                X_val = X[:y.shape[0]][-1:]
-                y = y[:-self.n_out]
-                X = X[:-2*self.n_out]
+                y_val = self.y[-1:]
+                X_val = self.X[:self.y.shape[0]][-1:]
+                y = self.y[:-self.n_out]
+                X = self.X[:-2*self.n_out]
         else:
-            X = X[:y.shape[0]]
-            X_val, y_val = None, None
+            if self.single_step:
+                y = self.y[h-1:]
+                X = self.X[:y.shape[0]]
+                X_val, y_val = None, None
+            else:
+                y = self.y
+                X = self.X[:y.shape[0]]
+                X_val, y_val = None, None
             
         # Samples arrays created until here with also temporal information: X, y, X_val, y_val, X_test.    
-        self.X = X
-        self.y = y
-        self.X_val = X_val # It could be None if 'validation = False'.
-        self.y_val = y_val # It could be None if 'validation = False'.
-        self.X_test = X_test
+        self.X_draw = X
+        self.y_draw = y
+        self.X_val_draw = X_val # It could be None if 'validation = False'.
+        self.y_val_draw = y_val # It could be None if 'validation = False'.
+        self.X_test_draw = X_test
         
-        # In this last phase, the output format is changed if desired: array or dataframe outputs.
-        if self.return_dataframe:
+        if self.row_output:
             # Define input and output samples training dataframes.
-            X_train, y_train = self.to_dataframe(X, y)
+            X_train, y_train = self.to_row_output(X, y)
             # Change the type of the dataframe.
             X_train = X_train.astype(dtype)
             y_train = y_train.astype(dtype)
             # Define input and output samples validation dataframes.
-            X_val, y_val = self.to_dataframe(X_val, y_val)
+            X_val, y_val = self.to_row_output(X_val, y_val)
             # Change the type of the dataframe.
             if validation:
                 X_val = X_val.astype(dtype)
                 y_val = y_val.astype(dtype)
             # Define input samples test dataframes.
-            X_test, _ = self.to_dataframe(X_test, None)
+            X_test, _ = self.to_row_output(X_test, None)
             # Change the type of the dataframe.
-            X_test = X_test.astype(dtype)
-            # Save the name of the adminstrata as index for the test input sample.
-            X_test.index = [self.group_name]
+            X_test = X_test.astype(dtype)            
         else:
             # Define input samples training arrays removing the temporal information.
             X_train = X[:, :, 1:].astype(dtype)
@@ -277,6 +312,19 @@ class LagsCreator:
                 X_val, y_val = None, None
             # Define input samples test arrays removing the temporal information.
             X_test = X_test[:, :, 1:].astype(dtype)
+
+        # In this last phase, the output format is changed if desired: array or dataframe outputs.
+        if self.return_dataframe:
+            # Define input and output samples training dataframes.
+            X_train, y_train = self.to_dataframe(X_train, y_train)
+            # Define input and output samples validation dataframes.
+            X_val, y_val = self.to_dataframe(X_val, y_val)
+            # Define input samples test dataframes.
+            X_test, _ = self.to_dataframe(X_test, None)
+            # Change the type of the dataframe.
+            X_test = X_test
+            # Save the name of the adminstrata as index for the test input sample.
+            X_test.index = [self.group_name]
             
         return X_train, y_train, X_val, y_val, X_test
     
@@ -295,7 +343,7 @@ class LagsCreator:
         m = pd.DataFrame(self.mask, index = x[:, 0], columns = self.features)
         # Getting (index, column) pairs for True elements of the boolean DataFrame.
         cells_to_color_input = m[m == True].stack().index.tolist()
-        if not self.return_dataframe:
+        if not self.row_output:
             cells_to_color_input_extra = m[m == False].stack().index.tolist()
         if y is not None:
             cells_to_color_output = y[0]
@@ -308,7 +356,7 @@ class LagsCreator:
             for location in cells_to_color_input:
                 df_styler.loc[location[0], location[1]] = "background-color: RGB(0,131,255)"
             # If the return dataframe is not set, the extra cells of the input filled with nan values are opaque colored.
-            if not self.return_dataframe:
+            if not self.row_output:
                 for location in cells_to_color_input_extra:
                     df_styler.loc[location[0], location[1]] = "background-color: RGBA(0,131,255,0.44)"
             # Set particular cell colors for the output.
@@ -341,24 +389,24 @@ class LagsCreator:
         # Create dataframes for visualization.
         if boundaries:
             # Keep only boundaries samples.
-            self.X = np.concatenate([self.X[:2], self.X[-2:]])
-            self.y = np.concatenate([self.y[:2], self.y[-2:]])
-            train_dataframes = [self.highlight_cells(x, y) for x, y in zip(self.X, self.y)]
-            if self.X_val is not None:
+            self.X_draw = np.concatenate([self.X_draw[:2], self.X_draw[-2:]])
+            self.y_draw = np.concatenate([self.y_draw[:2], self.y_draw[-2:]])
+            train_dataframes = [self.highlight_cells(x, y) for x, y in zip(self.X_draw, self.y_draw)]
+            if self.X_val_draw is not None:
                 # Keep only boundaries samples.
-                self.X_val = np.concatenate([self.X_val[:2], self.X_val[-2:]])
-                self.y_val = np.concatenate([self.y_val[:2], self.y_val[-2:]])
-                validation_dataframes = [self.highlight_cells(x, y) for x, y in zip(self.X_val, self.y_val)]
+                self.X_val_draw = np.concatenate([self.X_val_draw[:2], self.X_val_draw[-2:]])
+                self.y_val_draw = np.concatenate([self.y_val_draw[:2], self.y_val_draw[-2:]])
+                validation_dataframes = [self.highlight_cells(x, y) for x, y in zip(self.X_val_draw, self.y_val_draw)]
             else:
                 validation_dataframes = None
-            test_dataframes = [self.highlight_cells(x, None) for x in self.X_test]
+            test_dataframes = [self.highlight_cells(x, None) for x in self.X_test_draw]
         else:
-            train_dataframes = [self.highlight_cells(x, y) for x, y in zip(self.X, self.y)]
-            if self.X_val is not None:
-                validation_dataframes = [self.highlight_cells(x, y) for x, y in zip(self.X_val, self.y_val)]
+            train_dataframes = [self.highlight_cells(x, y) for x, y in zip(self.X_draw, self.y_draw)]
+            if self.X_val_draw is not None:
+                validation_dataframes = [self.highlight_cells(x, y) for x, y in zip(self.X_val_draw, self.y_val_draw)]
             else:
                 validation_dataframes = None
-            test_dataframes = [self.highlight_cells(x, None) for x in self.X_test]
+            test_dataframes = [self.highlight_cells(x, None) for x in self.X_test_draw]
             
         return train_dataframes, validation_dataframes, test_dataframes
     
