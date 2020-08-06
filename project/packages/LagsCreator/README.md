@@ -2,7 +2,7 @@
 
 This module allows us to create training/validation/test lag-features samples for time-series forecasting purposes. The module supports different configurations to get the outputs into several formats. In order to correctly use this module, it is necessary to have a pandas dataframe `df` with 2-level hierarchical indices on axis 1: the level 0 corresponding to a single main group and the level 1 corresponding to the time-series. For example, let's take the following dataframe `df`:
 
-<img src="./images/dataframe.png" width="200">
+<img src="./images/dataframe.png" width="120">
 
 N.B. The dataframe `df` need to have a pandas datetime index with an appropriate frequency set.
 
@@ -12,7 +12,7 @@ In order to better understand the functionality of the current module, let's fli
 <img src="./images/dataframe_flip.png" width="900">
 </p>
 
-In this case, we have three features (time-series), `A`, `B` and `C`. Supposing we would like to predict 4 steps ahead in the future for the time-series `A`. The time-series `A` will be therefore defined as our `target` feature. 
+In this case, we have three features (time-series), `A`, `B` and `C`. Supposing we would like to predict 4 steps ahead in the future for the time-series `A`. The time-series `A` is therefore defined as our `target` feature. 
 
 We can forecast multiple steps (e.g. 4 steps in the future) into a single-shot through a *direct approach* (in practice, we set `single_step = False` during the initialization of the Lags-Creator class). Now, we have to create lag-features for each time-series present in the dataframe. We then provide to the module the `lags_dictionary` parameter. It is a python dictionary containing the lag values for each time-series. 
 
