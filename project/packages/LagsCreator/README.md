@@ -1,6 +1,6 @@
 # Lags-Creator
 
-This module allows to create training/validation/test lag-features samples for time-series forecasting purposes. It supports several configurations that you can change to get the desired output format. The starting point for using this module is to have a dataframe `df` with two levels on axis 1: the level 0 corresponding to the single main group and the level 1 corresponding to the time-series. For example, let's take the following dataframe:
+This module allows us to create training/validation/test lag-features samples for time-series forecasting purposes. The module supports different configurations to get the outputs into several formats. In order to correctly use this module, it is necessary to have a pandas dataframe `df` with 2-level hierarchical indices on axis 1: the level 0 corresponding to a single main group and the level 1 corresponding to the time-series. For example, let's take the following dataframe `df`:
 
 <img src="./images/dataframe.png" width="200">
 
@@ -12,29 +12,53 @@ In order to better understand the functionality of the current module, let's fli
 <img src="./images/dataframe_flip.png" width="900">
 </p>
 
-In this case, we have three features (time-series), `A`, `B` and `C`. Supposing we would like to predict 4 steps ahead in the future of the time-series `A`. The time-series `A` becomes our `target` feature. We can complete the prediction through a *direct approach*: we will train a model to predict in one fell swoop 4 points in the future (in practice, we set `single_step = False`). Now, we have to create lag-features for each time-series present in the dataframe. We provide to the module the `lags_dictionary` parameter. It is a python dictionary containing the lag values for each time-series, e.g., `lags_dictionary = {"A": 5, "B": 5, "C": 5}`. In this manner, we create the following training points:
+In this case, we have three features (time-series), `A`, `B` and `C`. Supposing we would like to predict 4 steps ahead in the future for the time-series `A`. The time-series `A` will be therefore defined as our `target` feature. 
+
+We can forecast multiple steps (e.g. 4 steps in the future) into a single-shot through a *direct approach* (in practice, we set `single_step = False` during the initialization of the Lags-Creator class). Now, we have to create lag-features for each time-series present in the dataframe. We then provide to the module the `lags_dictionary` parameter. It is a python dictionary containing the lag values for each time-series. 
+
+E.g., setting the `lags_dictionary = {"A": 5, "B": 5, "C": 5}`, we create the following training points:
 
 <p align="center">
 <img src="./images/roll3.gif" width="700">
 </p>
 
-At the end of the procedure, we will have a set of training points <img src="https://render.githubusercontent.com/render/math?math=X=\{(x_1, y_1), ..., (x_12, y_12)\}">. In practice, we will have as output two numpy arrays `X` and `y` of shapes respectively `(n_samples, timesteps, n_features)` and `(n_samples, n_out)`; in our case `X` has shape `(12, 5, 3)` and `y` has shape `(12, 4)`. We can also modify the `lags_dictionary` parameter setting lags values differently from feature to feature. For example, setting `lags_dictionary = {"A": 3, "B": 5, "C": 2}`:
+At the end of the iteration, we will have a set of training points: <img src="https://render.githubusercontent.com/render/math?math=X=\{(x_1, y_1), ..., (x_12, y_12)\}">. 
+
+We can also modify the `lags_dictionary` parameter setting lags values differently from feature to feature. For example, setting `lags_dictionary = {"A": 3, "B": 5, "C": 2}`:
 
 <p align="center">
 <img src="./images/roll4.gif" width="700">
 </p>
 
-Also in this case the outputs will be two numpy arrays of shapes respectively `(n_samples, timesteps, n_features) = (12, 5, 3)` and `(n_samples, n_out) = (12, 4)`. The empty window spaces are in this case filled with nan values.
+The algorithm works also for static time-series, in this case the value to set in the input dictionary is 0. For example, supposing that the time-series `B` is static, you have to pass the dictionary `lags_dictionary = {"A": 5, "B": 0, "C": 2}`. Furthermore, if you decide to insert a None feature lag in the dictionary, the feature corresponding to that value is automatically discarded during the process for creating samples.
 
-In addition to these two output arrays, a futhermore output is returned: the input sample `X_test` for predicting the 4 points ahead in the future not present in the dataset (in this case [2018-09-11, 2018-09-12, 2018-09-13, 2018-09-14]):
+By default (`return_dataframe = False`, `row_output = False`), the module returns two numpy arrays `X` and `y` as training output of shapes respectively `(n_samples, timesteps, n_features)` and `(n_samples, n_out)`. if `lags_dictionary = {"A": 3, "B": 2, "C": 5}`, `X` has shape `(12, 5, 3)` and `y` has shape `(12, 4)`. The empty window spaces are in this case filled with nan values:
+
+<p align="center">
+<img src="./images/output_array.png" width="600">
+</p>
+
+You can change the output format through the parameter `row_output = True`. In this case each training sample is flatten over an unique row to get the shapes `X`: `(12, 10)` and `y`: `(12, 4)`:
+
+<p align="center">
+<img src="./images/output_array2.png" width="700">
+</p>
+
+As you can see, using this modality the nan values are deleted. Another difference using `row_output = True` despite to not use it, is regarding the management of static features. For example, if `row_output = False` and `lags_dictionary = {"A": 5, "B": 0, "C": 2}`, the output is equivalent to set the lag of the time-series `B` as the maximum value in the dictionary, i.e. 5. In the `row_output = True` case, it is kept an unique lag value for the static time-series.
+
+Another configuration to set (only if you are working in the `row_output = True` modality), is through the `return_dataframe = True` parameter. In this case, the output format is returned as a pandas dataframe:
+
+<p align="center">
+<img src="./images/output_dataframe.png" width="700">
+</p>
+
+In addition to these two outputs, a futhermore output is returned: the input sample `X_test` for predicting the 4 points ahead in the future not present in the dataset (in this case [2018-09-11, 2018-09-12, 2018-09-13, 2018-09-14]):
 
 <p align="center">
 <img src="./images/roll_test.png" width="700">
 </p>
 
 where, in this example, we have set `lags_dictionary = {"A": 5, "B": 5, "C": 5}`.
-
-The algorithm works also for static time-series, in this case the values to set in the input dictionary of lags is 0. For example, supposing that the time-series `B` is static, you have to pass the dictionary `lags_dictionary = {"A": 5, "B": 0, "C": 5}`. In this case, it is equivalent to set the lag as the maximum value, i.e. 5. Furthermore, if you decide to not insert a feature lag in the dictionary that feature is automatically discarded during the process to create samples.
 
 Using the parameter `validation = True`, we automatically discard the last 4 points to use for validation in the following manner:
 
@@ -63,18 +87,6 @@ where we have set `lags_dictionary = {"A": 3, "B": 0, "C": 2}`. The procedure is
 <p align="center">
 <img src="./images/roll7.gif" width="700">
 </p>
-
-A last possible configuration is regarding the format of the outputs. You can arrange the lag-features of each sample over an unique row through the `row_output` parameter. So far the returned outputs we talked about are numpy arrays. Now, setting the parameter `return_dataframe = True`, `row_output = True`, `single_step = False`, `lags_dictionary = {"A": 3, "B": 0, "C": 2}` and without validation:
-
-<p align="center">
-<img src="./images/return_dataframe_x.png" width="300">
-</p>
-
-<p align="center">
-<img src="./images/return_dataframe_y.png" width="300">
-</p>
-
-As you can see, in this modality the static feature is managed to kept a single value at each training point (the rows of the output dataframe).
 
 ## Visualization
 
