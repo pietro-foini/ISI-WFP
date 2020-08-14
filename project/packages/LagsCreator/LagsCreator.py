@@ -12,9 +12,9 @@ import pandas as pd
 class LagsCreator:
     """LagsCreator
     
-    This module allows to create training/validation/test lag-features samples for time-series forecasting purposes. 
-    The module supports different configurations to get the outputs into several formats. An advantage of this module is 
-    to visualize the lag-features samples created through an highlighting of the cells of the dataframe.
+    This module allows to create lag-features samples for time-series forecasting purposes. The module supports different configurations 
+    to get the outputs into several formats. An advantage of this module is to visualize the lag-features samples created through 
+    an highlighting of the cells of the dataframe.
     
     """
     def __init__(self, group, lags_dictionary, target, n_out, return_dataframe = False, row_output = False, 
@@ -35,15 +35,14 @@ class LagsCreator:
         target: a string containing the name of the time-series that you want to predict. The target variable must be present
            into the 'lags_dictionary'.
         n_out: the maximum forecasting horizon ahead in the future.
-        return_dataframe: the modality to set in order to have the outputs returned as pandas dataframes.
+        return_dataframe: the modality to set in order to have the outputs returned as pandas dataframes. This parameter can be use 
+           only if the 'row_output' mode is set.
         row_output: the modality to set in order to arrange the lag-features of each sample over an unique row. 
         feature_time: if you want to create a feature time to add as feature in the input samples. This parameter can be use 
            only if the 'single_step' and 'row_output' modes are set.
         single_step: if set, each prediction horizon is predicted independently from the others.
            
         """        
-        # Define the name of the group (name of the column on axis 1 and level 0).
-        group_name = group.columns.get_level_values(0).unique()
         # Remove level 0 of the dataframe on axis 1.
         group = group.droplevel(level = 0, axis = 1)
         
@@ -52,10 +51,8 @@ class LagsCreator:
             raise ValueError("You can use the 'feature_time' only if you are working in the 'single_step' and 'row_output' modes.")
         if return_dataframe and not row_output:
             raise ValueError("If 'return_dataframe' is set, you must work using the 'row_output' mode.")
-        if target not in lags_dictionary.keys():
-            raise ValueError("The target feature must be always included in the 'lags_dictionary' parameter in order to be a predictor.")
         if set(lags_dictionary.keys()) != set(group.columns):
-            raise ValueError("You have to provide a lag value for each time-series stored in the input dataframe. Check the 'lags_dictionary' parameter.")
+            raise ValueError("You have to provide a lag value for each time-series stored in the input dataframe. Please check the 'lags_dictionary' parameter.")
             
         # The features whose are specified into 'lags_dictionary' with None values are removed (not considered as predictors).        
         features_to_remove = [k for k,v in lags_dictionary.items() if v is None]
@@ -97,8 +94,8 @@ class LagsCreator:
         else:
             y = rolling_window(group[target].reset_index().values[window_size:], n_out, axes = 0)                        
      
-        # Create column names for the features lags for dataframe output format if selected.
-        if return_dataframe:
+        if row_output:
+            # Create column names for the features lags.
             # Input columns.
             columns_input = list()
             for feature_mask, feature in zip(mask.T, features):
@@ -114,13 +111,12 @@ class LagsCreator:
             # Output columns.
             columns_output = ["x(t+%d)" % (i+1) for i in range(n_out)]
         else:
-            columns_input = None
-            columns_output = None  
+            columns_input = features
+            columns_output = target
         
         # Define some attributes of the class.
         self.X = X
         self.y = y
-        self.group_name = group_name
         self.group = group
         self.n_out = n_out
         self.target = target
@@ -192,141 +188,85 @@ class LagsCreator:
             # Not consider temporal information for the input samples.
             X = X[:, :, 1:]
             # Flatten the lags of each sample over the rows.
-            X = np.stack([x.flatten("F") for x in X])
-            delnan_mask = np.frompyfunc(lambda i: i is np.nan, 1, 1)(X).astype(bool)
-            X = np.ma.masked_array(X, mask = delnan_mask)
-            X = np.ma.compress_rows(X.T).T
+            X = X.reshape((X.shape[0], -1), order = "F")
+            # Delete nan columns.
+            try:
+                X = X.astype(float)
+                X = X[:, ~np.isnan(X).any(axis = 0)] # If X contains numeric values.
+            except:   
+                X = X[:, ~pd.isnull(X).any(axis = 0)] # If X doesn't contain numeric values.
 
             # Add the temporal information to the input samples.
             if self.feature_time:
-                if y is not None:
-                    days = [date.day for date in dates]
-                    months = [date.month for date in dates]
-                    years = [date.year for date in dates]
-                    # Create feature time.
-                    dates = np.stack([days, months, years], axis = 1)
-                    # Add to the data.
-                    X = np.concatenate([X, dates], axis = 1)
-                else:
-                    day = (self.group.index[-1] + (self.h-1)*self.group.index.freq).day
-                    month = (self.group.index[-1] + (self.h-1)*self.group.index.freq).month
-                    year = (self.group.index[-1] + (self.h-1)*self.group.index.freq).year 
-                    dates = np.array([[day], [month], [year]]).transpose()
-                    X = np.concatenate([X, dates], axis = 1)
+                days = [date.day for date in dates]
+                months = [date.month for date in dates]
+                years = [date.year for date in dates]
+                # Create feature time.
+                dates = np.stack([days, months, years], axis = 1)
+                # Add to the data.
+                X = np.concatenate([X, dates], axis = 1)
         else:
             X = None
 
         return X, y
         
-    def to_supervised(self, h = None, validation = False, dtype = object):
+    def to_supervised(self, h = None, dtype = object):
         """
         ***Main function***
  
-        This function allows to create training/validation/test samples to use for time-series forecasting purposes.
+        This function allows to create the input X and output y samples to use for time-series forecasting purposes.
         
         Parameters
         ----------   
-        h: the independent forecasting horizon to predict for the 'single_step' mode. If 'single_step = False', the 'h' parameter
-           is not taken into account.      
-        validation: if you want to create validation samples.
-        dtype: the type of the output elements.
+        h: the independent forecasting horizon to predict if you are using the 'single_step' mode. If 'single_step = False',
+           the 'h' parameter is not taken into account.      
+        dtype: the type returned for the input X and output y samples.
            
         Return
         ----------
-        X_train: the training input samples.
-        y_train: the training output samples.
-        X_val: the validation input samples.
-        y_val: the validation output samples.
-        X_test: the test input sample.
+        X: the input samples.
+        y: the output samples.
     
         """
         # Check parameters.
         if self.single_step and h is None:
             raise ValueError("If 'single_step' is set, you must provide a value for the 'h' parameter.")
         if h is not None and h > self.n_out:
-            raise ValueError("The 'h' parameter must be not greater than 'n_out' parameter.")      
+            raise ValueError("The 'h' parameter mustn't be greater than 'n_out' parameter.")      
         
         # Define some attributes of the class.
         self.h = h
-        self.validation = validation
 
-        # Splitting of the input X samples and the output y samples into training/validation/test.
-        # Define the test sample input.
-        X_test = self.X[-1:]
-        # Define the training and validation samples input and outputs.
-        if validation:
-            if self.single_step:
-                y_val = self.y[-self.n_out:]
-                X_val = self.X[-(self.n_out+h):][:self.n_out]
-                y = self.y[h-1:-self.n_out]
-                X = self.X[:-(self.n_out+h)]
-            else:
-                y_val = self.y[-1:]
-                X_val = self.X[:self.y.shape[0]][-1:]
-                y = self.y[:-self.n_out]
-                X = self.X[:-2*self.n_out]
+        # Define the input and outputs samples.
+        if self.single_step:
+            y = self.y[h-1:]
+            X = self.X[:y.shape[0]]
         else:
-            if self.single_step:
-                y = self.y[h-1:]
-                X = self.X[:y.shape[0]]
-                X_val, y_val = None, None
-            else:
-                y = self.y
-                X = self.X[:y.shape[0]]
-                X_val, y_val = None, None
+            y = self.y
+            X = self.X[:y.shape[0]]
             
-        # Samples arrays created until here with also temporal information: X, y, X_val, y_val, X_test.    
+        # Save these samples arrays with temporal information to use for the visualization.    
         self.X_draw = X
         self.y_draw = y
-        self.X_val_draw = X_val # It could be None if 'validation = False'.
-        self.y_val_draw = y_val # It could be None if 'validation = False'.
-        self.X_test_draw = X_test
         
         if self.row_output:
             # Define input and output samples training dataframes.
-            X_train, y_train = self.to_row_output(X, y)
-            # Change the type of the dataframe.
-            X_train = X_train.astype(dtype)
-            y_train = y_train.astype(dtype)
-            # Define input and output samples validation dataframes.
-            X_val, y_val = self.to_row_output(X_val, y_val)
-            # Change the type of the dataframe.
-            if validation:
-                X_val = X_val.astype(dtype)
-                y_val = y_val.astype(dtype)
-            # Define input samples test dataframes.
-            X_test, _ = self.to_row_output(X_test, None)
-            # Change the type of the dataframe.
-            X_test = X_test.astype(dtype)            
+            X, y = self.to_row_output(X, y)
+            # Change the type of the samples.
+            X = X.astype(dtype)
+            y = y.astype(dtype)        
         else:
             # Define input samples training arrays removing the temporal information.
-            X_train = X[:, :, 1:].astype(dtype)
+            X = X[:, :, 1:].astype(dtype)
             # Define output samples training arrays removing the temporal information.
-            y_train = y[:, 1, :].astype(dtype)
-            if validation:
-                # Define input samples validation arrays removing the temporal information.
-                X_val = X_val[:, :, 1:].astype(dtype)
-                # Define output samples validation arrays removing the temporal information.
-                y_val = y_val[:, 1, :].astype(dtype) 
-            else:
-                X_val, y_val = None, None
-            # Define input samples test arrays removing the temporal information.
-            X_test = X_test[:, :, 1:].astype(dtype)
-
-        # In this last phase, the output format is changed if desired: array or dataframe outputs.
+            y = y[:, 1, :].astype(dtype)
+            
+        # The output format is changed from array to dataframe.
         if self.return_dataframe:
             # Define input and output samples training dataframes.
-            X_train, y_train = self.to_dataframe(X_train, y_train)
-            # Define input and output samples validation dataframes.
-            X_val, y_val = self.to_dataframe(X_val, y_val)
-            # Define input samples test dataframes.
-            X_test, _ = self.to_dataframe(X_test, None)
-            # Change the type of the dataframe.
-            X_test = X_test
-            # Save the name of the adminstrata as index for the test input sample.
-            X_test.index = [self.group_name]
+            X, y = self.to_dataframe(X, y)
             
-        return X_train, y_train, X_val, y_val, X_test
+        return X, y
     
     def highlight_cells(self, x, y):
         """
@@ -350,8 +290,6 @@ class LagsCreator:
 
         def draw(x):
             df_styler  = group_style.copy()
-            if self.validation:
-                df_styler.loc[-self.n_out:, self.target] = "color: red"
             # Set particular cell colors for the input.
             for location in cells_to_color_input:
                 df_styler.loc[location[0], location[1]] = "background-color: RGB(0,131,255)"
@@ -373,7 +311,7 @@ class LagsCreator:
         """
         ***Sub-function***
  
-        This function allows to visualize the training/validation/test input and output samples created by the process.
+        This function allows to visualize the input and output samples created by the process.
         
         Parameters
         ----------
@@ -381,9 +319,7 @@ class LagsCreator:
         
         Return
         ----------
-        train_dataframes: a list of dataframes that underline each training sample created.
-        validation_dataframes: a list of dataframes that underline each validation sample created.
-        test_dataframes: a list of dataframes that underline each test sample created.
+        highlight_dataframes: a list of dataframes that underline each sample created.
 
         """
         # Create dataframes for visualization.
@@ -391,22 +327,9 @@ class LagsCreator:
             # Keep only boundaries samples.
             self.X_draw = np.concatenate([self.X_draw[:2], self.X_draw[-2:]])
             self.y_draw = np.concatenate([self.y_draw[:2], self.y_draw[-2:]])
-            train_dataframes = [self.highlight_cells(x, y) for x, y in zip(self.X_draw, self.y_draw)]
-            if self.X_val_draw is not None:
-                # Keep only boundaries samples.
-                self.X_val_draw = np.concatenate([self.X_val_draw[:2], self.X_val_draw[-2:]])
-                self.y_val_draw = np.concatenate([self.y_val_draw[:2], self.y_val_draw[-2:]])
-                validation_dataframes = [self.highlight_cells(x, y) for x, y in zip(self.X_val_draw, self.y_val_draw)]
-            else:
-                validation_dataframes = None
-            test_dataframes = [self.highlight_cells(x, None) for x in self.X_test_draw]
+            highlight_dataframes = [self.highlight_cells(x, y) for x, y in zip(self.X_draw, self.y_draw)]
         else:
-            train_dataframes = [self.highlight_cells(x, y) for x, y in zip(self.X_draw, self.y_draw)]
-            if self.X_val_draw is not None:
-                validation_dataframes = [self.highlight_cells(x, y) for x, y in zip(self.X_val_draw, self.y_val_draw)]
-            else:
-                validation_dataframes = None
-            test_dataframes = [self.highlight_cells(x, None) for x in self.X_test_draw]
+            highlight_dataframes = [self.highlight_cells(x, y) for x, y in zip(self.X_draw, self.y_draw)]
             
-        return train_dataframes, validation_dataframes, test_dataframes
+        return highlight_dataframes
     

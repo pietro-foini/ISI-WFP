@@ -52,52 +52,24 @@ Another configuration to set (only if you are working in the `row_output = True`
 <img src="./images/output_dataframe.png" width="700">
 </p>
 
-In addition to these two outputs, a futhermore output is returned: the input sample `X_test` for predicting the 4 points ahead in the future not present in the dataset (in this case [2018-09-11, 2018-09-12, 2018-09-13, 2018-09-14]):
-
-<p align="center">
-<img src="./images/roll_test.png" width="700">
-</p>
-
-where, in this example, we have set `lags_dictionary = {"A": 5, "B": 5, "C": 5}`.
-
-Using the parameter `validation = True`, we automatically discard the last 4 points to use for validation in the following manner:
-
-<p align="center">
-<img src="./images/roll2.gif" width="700">
-</p>
-
-where we have set `lags_dictionary = {"A": 3, "B": 0, "C": 2}`. As you can see, we have created a set of training points <img src="https://render.githubusercontent.com/render/math?math=X=\{(x_1, y_1), ..., (x_8, y_8)\}"> and a validation set <img src="https://render.githubusercontent.com/render/math?math=X_{val}=\{(x_{val}, y_{val})\}">.
-
-<p align="center">
-<img src="./images/roll_val2.png" width="700">
-</p>
-
 As an alternative to the direct approach there is an approach that we call `single_step` where each prediction horizon is predicted independently of the others. So, setting `single_step = True`, and supposing we want to predict the 2-th of 4 prediction horizons, we will have the following steps:
 
 <p align="center">
 <img src="./images/roll5.gif" width="700">
 </p>
 
-where we have set `lags_dictionary = {"A": 3, "B": 0, "C": 2}`. The procedure is similar for the other prediction horizons. If we set the `validation = True` parameter, we will have as outputs: 
-
-<p align="center">
-<img src="./images/roll6.gif" width="700">
-</p>
-
-<p align="center">
-<img src="./images/roll7.gif" width="700">
-</p>
+where we have set `lags_dictionary = {"A": 3, "B": 5, "C": 2}`. The procedure is similar for the other prediction horizons.
 
 ## Visualization
 
 The LagsCreator module also provide a visualization function in order to better examine the samples created. Supposing to use the example dataframe `df` and we create the following samples using the `lags_dictionary = {"A": 3, "B": 0, "C": 2}`:
 
     creator = LagsCreator(df, lags_dict, "A", n_out = 4, return_dataframe = False, row_output = False, feature_time = False, single_step = True)
-    X_train, y_train, X_val, y_val, X_test = creator.to_supervised(h = 2, validation = False)
+    X_train, y_train = creator.to_supervised(h = 2)
                                                                    
 Now, we can visualize the samples created using the `visualization` function:
 
-    train, val, test = creator.visualization(boundaries = False)
+    train = creator.visualization(boundaries = False)
     
 If you want to see the 6-th training sample, we get it through the variable `train[5]`: 
 
