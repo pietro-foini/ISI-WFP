@@ -8,7 +8,7 @@ The Reduced Coping Strategy Index (rCSI) is a reduced version of the CSI indicat
   <img src="./images/rcsi_survey.png" width="500">
 </p>
 
-<p align="center">**Figure 1**</p>
+<p align="center">Figure 1</p>
 
 [1]. https://resources.vam.wfp.org/data-analysis/quantitative/food-security/the-coping-strategy-index
 
