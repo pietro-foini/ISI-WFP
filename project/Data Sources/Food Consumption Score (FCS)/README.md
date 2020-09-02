@@ -3,9 +3,7 @@
 The Food Consumption Score is a proxy indicator for food security, as described in the related website provided by WFP [1]. The indicator is built by conducting household telephone surveys in several African and Asian countries by inspecting how often the households consume food items from different food groups during a 7-day reference period. The questionnaire that drives the survey looks like Figure 1 and it is conducted posing the following question: *I would like to ask you about all the different foods that your household members have eaten in the last 7 days. Could you please tell me how many days in the past week your household has eaten the following foods?*
 
 <p align="center">
-<figure>
   <img src="./images/fcs_survey1.png" width="300">
-</figure>
 </p>
 
 <p align="center">Figure 1</p>
@@ -13,7 +11,7 @@ The Food Consumption Score is a proxy indicator for food security, as described 
 At the end of the questionnaire, the food items are grouped into predefined food groups to which is assigned a reference weight based on the nutrient density of the corresponding foods (see Figure 2). All the consumption frequencies of the food items within the same group are first summed and then multiplied by their corresponding weights. Finally, the weighed food group scores are summed to get the **Food Consumption Score (FCS)**. All the calculation steps are summarized by the following formula:
 
 <p align="center">
-<img src="https://render.githubusercontent.com/render/math?math=FCS_{household} = \sum_i^{Food \ groups} w_i \cdot \Big(\sum_j^{Food \ items} c_j^{(i)}\Big)_{|_7}">
+    <img src="https://render.githubusercontent.com/render/math?math=FCS_{household} = \sum_i^{Food \ groups} w_i \cdot \Big(\sum_j^{Food \ items} c_j^{(i)}\Big)_{|_7}">
 </p>
 
 where <img src="https://render.githubusercontent.com/render/math?math=c"> is the food item frequency and <img src="https://render.githubusercontent.com/render/math?math=|_7"> is the operator that resets to 7 the values above 7.
@@ -21,9 +19,7 @@ where <img src="https://render.githubusercontent.com/render/math?math=c"> is the
 In practical terms, the FCS is a composite score based on dietary diversity, food frequency, and relative nutritional importance at household level. 
 
 <p align="center">
-<figure>
   <img src="./images/fcs_survey2.png" width="300">
-</figure>
 </p>
 
 <p align="center">Figure 2</p>
