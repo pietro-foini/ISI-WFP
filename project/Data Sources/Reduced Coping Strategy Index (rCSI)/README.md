@@ -4,9 +4,9 @@ The Coping Strategy Index (CSI) is a proxy indicator for rapid measurement of ho
 
 The Reduced Coping Strategy Index (rCSI) is a reduced version of the CSI indicator due to the fact that the survey is conducted analyzing only 5 coping strategies. This standardization helps to generalize the survey to more countries. Each of these strategies has an own severity weight in order to set a level of risk correlated to the adoption of that strategy. An example of rCSI estimation is shown in Figure 1.
 
-<figure>
+<p align="center">
   <img src="./images/rcsi_survey.png" width="500">
-</figure>
+</p>
 
 <p align="center">**Figure 1**</p>
 
