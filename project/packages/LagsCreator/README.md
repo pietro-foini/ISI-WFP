@@ -40,7 +40,7 @@ As an alternative to the direct approach there is an approach that we call `sing
 
 The LagsCreator module also provide a visualization function in order to better examine the samples created. Supposing to use the example dataframe `df` and we create the following samples using the previous `lags_dictionary`.
 
-    creator = LagsCreator(df, lags_dict, "B", return_dataframe = True)
+    creator = LagsCreator(df["Group 1"], lags_dict, "B", return_dataframe = True)
     X_train, y_train = creator.to_supervised(h = 2, single_step = True)
                                                                    
 Now, we can visualize the samples created using the `visualization` function:
