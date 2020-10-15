@@ -1,6 +1,10 @@
-from rolling_window import rolling_window
+import dataframe_image as dfi
+from itertools import chain
 import numpy as np
 import pandas as pd
+import imageio
+import shutil
+import os
 
 # Python module.
 #
@@ -10,15 +14,14 @@ import pandas as pd
 # Year: 2020
 
 class LagsCreator:
-    """LagsCreator
+    """LagsCreator.
     
-    This module allows to create lag-features samples for time-series forecasting purposes. The module supports different configurations 
-    to get the outputs into several formats. An advantage of this module is to visualize the lag-features samples created through 
+    This module allows to create lag-features for time-series forecasting purposes. It supports different configurations 
+    to get the outputs into several formats. It is also possible to visualize the lag-features through 
     an highlighting of the cells of the dataframe.
     
     """
-    def __init__(self, group, lags_dictionary, target, n_out, return_dataframe = False, row_output = False, 
-                 feature_time = False, single_step = False):
+    def __init__(self, group, lags_dictionary, target, return_dataframe = False, feature_time = None):
         """
         ***Initialization function***
  
@@ -26,108 +29,127 @@ class LagsCreator:
         
         Parameters
         ----------
-        group: a pandas dataframe with two hierarchical multi-index on axis 1: the level 0 corresponding to a single main group and 
-           the level 1 corresponding to single/multiple time-series. The dataframe must have as index a pandas datetime column 
-           with an appropriate frequency set. 
-        lags_dictionary: a dictionary containing the lag values corresponding to each time-series (the names of the time-series 
-           will be the keys of the dictionary). If you dont't want to use a time-series, the corresponding value in the 
-           dictionary must be set to 'None'.
-        target: a string containing the name of the time-series that you want to predict. The target variable must be present
-           into the 'lags_dictionary'.
-        n_out: the maximum forecasting horizon ahead in the future.
-        return_dataframe: the modality to set in order to have the outputs returned as pandas dataframes. This parameter can be use 
-           only if the 'row_output' mode is set.
-        row_output: the modality to set in order to arrange the lag-features of each sample over an unique row. 
-        feature_time: if you want to create a feature time to add as feature in the input samples. This parameter can be use 
-           only if the 'single_step' and 'row_output' modes are set.
-        single_step: if set, each prediction horizon is predicted independently from the others.
+        group: a pandas dataframe with single/multiple columns representing the time-series. The dataframe must have as 
+           index a pandas datetime column with an appropriate frequency set. 
+        lags_dictionary: a dictionary containing the lag values (array object) corresponding to each time-series (the names of the 
+           time-series must be the keys of the dictionary which will be associated with the corresponding lag values). If you don't want 
+           to use a time-series, the corresponding value in the dictionary must be set to 'None'. Each column must have set a 
+           specified value.
+        target: a string containing the name of the time-series that you want to predict. The target variable must have 
+           a lag value different from 'None' into the 'lags_dictionary'.
+        return_dataframe: the modality to set in order to have the outputs returned as pandas dataframes.
+        feature_time: if you want to create a feature time to add as feature in the input samples. This parameter has to be a 
+           list containing the time information you want to extract from data.
            
         """        
-        # Remove level 0 of the dataframe on axis 1.
-        group = group.droplevel(level = 0, axis = 1)
-        
         # Check parameters.
-        if feature_time and (not single_step or not row_output):
-            raise ValueError("You can use the 'feature_time' only if you are working in the 'single_step' and 'row_output' modes.")
-        if return_dataframe and not row_output:
-            raise ValueError("If 'return_dataframe' is set, you must work using the 'row_output' mode.")
-        if set(lags_dictionary.keys()) != set(group.columns):
-            raise ValueError("You have to provide a lag value for each time-series stored in the input dataframe. Please check the 'lags_dictionary' parameter.")
-            
-        # The features whose are specified into 'lags_dictionary' with None values are removed (not considered as predictors).        
+        symmetric_difference = set(lags_dictionary.keys()).symmetric_difference(set(group.columns))
+        if symmetric_difference != set():
+            raise ValueError("You have to provide a lag value for each time-series stored in the input dataframe. Please check the 'lags_dictionary' parameter. More precisely, check the features %s." % str(symmetric_difference))
+
+        # The features whose are specified into the 'lags_dictionary' with None values are not considered as predictors.        
         features_to_remove = [k for k,v in lags_dictionary.items() if v is None]
-        # Define the features that are kept.
+        # Update the 'lags_dictionary' not considering the features with None values.
         lags_dictionary = {k: v for k,v in lags_dictionary.items() if v is not None}
-        # Define static features among the features (features, i.e. time-series, with lag value set to 0).
-        static_features = [k for k,v in lags_dictionary.items() if v == 0]
-        # Delete unused features.
-        group = group.drop(columns = features_to_remove)        
-        # Define the features (the names of the time-series).
+        # Define the names of the static features among all the features (features, i.e. time-series, with lag value set to 0).
+        static_features = [k for k,v in lags_dictionary.items() if type(v) == int and v == 0]
+        # Delete unused features to the input dataframe.
+        group = group.drop(columns = features_to_remove) 
+        # Define all the remaining features.
         features = group.columns
-        
-        # Define the boolean mask for the creation of lag-features for the time-series.
-        # Define the reference size of the window (time-step dimension).
-        window_size = max(lags_dictionary.values())
+
+        # Define the last temporal index of the first expanding window such that it is possible to start collecting valid data for each time-series.
+        index = max(group[group.columns.difference(static_features)].apply(lambda x: x.dropna().iloc[:np.max(lags_dictionary[x.name])].index[-1]).values)
+        subgroup = group.loc[:index]
+        # Create all the expanding windows using the numpy roll function until the end of the input dataframe.
+        difference = len(group) - len(subgroup)
+        group_np = group.reset_index().values
+        expanding_windows = np.stack([np.roll(group_np, difference-i, axis = 0) for i in range(difference+1)])
+
         # Create mask based on lags into 'lags_dictionary' to pass over the input samples.
-        mask = np.full(shape = (window_size, len(features)), fill_value = False)    
-        for i, feature in enumerate(features):
-            if row_output and feature in static_features:
-                mask[:, i][-1] = True
+        mask = np.full(shape = (expanding_windows.shape[1], len(features)+1), fill_value = False) 
+        # Set the value for the time column.
+        mask[:, 0] = True
+        
+        # Create mask values for the features of each sample.
+        def get_(x):
+            mask_x = mask.copy()
+            for i, feature in enumerate(features):
+                if feature in static_features:
+                    mask_x[:, i+1][-1] = True
+                else:
+                    lags = np.argwhere(~np.isnan(x[:,i+1].astype(float))).flatten()[-lags_dictionary[feature]]
+                    mask_x[:, i+1][lags] = True          
+            # Create input sample using a mask.
+            x = np.ma.masked_array(x, mask = ~mask_x, fill_value = 0).filled(np.nan)
+            return x
+
+        # Input samples.
+        X = np.stack(list(map(get_, expanding_windows)))
+
+        # Create output samples. 
+        # Shape: (n_samples, n_prediction_horizons, 1 + 1). +1 is referred to the temporal information. 
+        y = self.rolling_window(group[target].reset_index().values[len(subgroup):], 1)
+
+        # Define test point.
+        X_test = X[-1:]
+
+        # Create column names for the features lags.
+        # Input columns.
+        columns_input_0 = list()
+        columns_input_1 = list()
+        for feature in features:
+            # Create columns values.
+            if feature in static_features:
+                columns_0 = [feature]
+                columns_1 = ["x"]
+                columns_input_0.extend(columns_0)
+                columns_input_1.extend(columns_1)
             else:
                 lags = lags_dictionary[feature]
-                mask[:, i][-lags:] = True     
-                
-        # Create input samples.
-        # Rolling a no masked window over the dataframe based on the maximum value of the 'lags_dictionary'.
-        X = rolling_window(group.reset_index().values, window_size, axes = 0).swapaxes(1, 2)
-        # Add the mask to the input samples based on lags.
-        # Add the temporal information to the mask in order to always mantain the temporal information.
-        mask_with_time = np.concatenate([np.expand_dims(np.array([True]*window_size), 1), mask], axis = 1)
-        # Expand the mask to all the samples.
-        mask_with_time = np.tile(mask_with_time, (X.shape[0], 1, 1))
-        # Define input samples with defined lags (with also temporal information).
-        X = np.ma.masked_array(X, mask = ~mask_with_time, fill_value = 0).filled(np.nan)
-        
-        # Create output samples.
-        if single_step:
-            y = rolling_window(group[target].reset_index().values[window_size:], 1, axes = 0)
-        else:
-            y = rolling_window(group[target].reset_index().values[window_size:], n_out, axes = 0)                        
-     
-        if row_output:
-            # Create column names for the features lags.
-            # Input columns.
-            columns_input = list()
-            for feature_mask, feature in zip(mask.T, features):
-                # Create columns values.
-                if feature in static_features:
-                    columns = ["%s" % feature]
-                    columns_input.extend(columns)
-                else:
-                    columns = ["%s(t)" % feature if i == 1 else "%s(t-%d)" % (feature,i-1) for i in range(sum(feature_mask), 0, -1)]
-                    columns_input.extend(columns)
-            if feature_time:
-                columns_input.extend(["Day", "Month", "Year"])    
-            # Output columns.
-            columns_output = ["x(t+%d)" % (i+1) for i in range(n_out)]
-        else:
-            columns_input = features
-            columns_output = target
-        
+                columns_0 = [feature]*len(lags)
+                columns_1 = ["x(t)" if i == 1 else "x(t-%d)" % (i-1) for i in reversed(lags)]
+                columns_input_0.extend(columns_0)
+                columns_input_1.extend(columns_1)
+
+        if feature_time is not None:
+            columns_input_0.extend(feature_time)    
+            columns_input_1.extend(["x"]*len(feature_time))    
+        # Create multi-index columns for input samples.
+        iterables_input = list(zip(*[columns_input_0, columns_input_1]))
+        columns_input = pd.MultiIndex.from_tuples(iterables_input, names = ["Features", "Lags"])
+
         # Define some attributes of the class.
         self.X = X
         self.y = y
+        self.X_test = X_test
         self.group = group
-        self.n_out = n_out
         self.target = target
-        self.mask = mask
         self.features = features
         self.return_dataframe = return_dataframe
-        self.single_step = single_step
         self.feature_time = feature_time
-        self.row_output = row_output
         self.columns_input = columns_input
-        self.columns_output = columns_output
+        
+    def rolling_window(self, x, window):
+        """
+        ***Sub-function***
+ 
+        This function allows to rolling a window over a numpy array.
+        
+        Parameters
+        ----------
+        x: the input array.
+        window: the length of the window to slide.
+
+        """
+        # Set shape.
+        shape = list(x.shape)
+        shape[0] = x.shape[0] - window + 1
+        shape.insert(len(shape)-1, window)
+        # Set strides.
+        strides = list(x.strides)
+        strides.insert(0, strides[0])
+        return np.lib.stride_tricks.as_strided(x, shape = tuple(shape), strides = tuple(strides))
     
     def to_dataframe(self, X, y):
         """
@@ -144,11 +166,14 @@ class LagsCreator:
         # Create dataframe of output samples.
         if y is not None:
             if self.single_step:
-                columns_output = [self.columns_output[self.h-1]]
+                # Create multi-index columns for output samples.
+                iterables_output = list(zip(*[[self.target], ["x(t+%d)" % (self.h)]]))
+                columns_output = pd.MultiIndex.from_tuples(iterables_output, names = ["Target", "Prediction horizon"])
             else:
-                columns_output = self.columns_output
+                # Create multi-index columns for output samples.
+                iterables_output = list(zip(*[[self.target]*self.h, ["x(t+%d)" % (i+1) for i in range(self.h)]]))
+                columns_output = pd.MultiIndex.from_tuples(iterables_output, names = ["Target", "Prediction horizon"])
             y = pd.DataFrame(y, columns = columns_output)
-            y.columns.name = "Target|Prediction horizon"
         else:
             y = None
             
@@ -156,7 +181,6 @@ class LagsCreator:
         if X is not None:
             # Create dataframe of input samples. 
             X = pd.DataFrame(X, columns = self.columns_input)                 
-            X.columns.name = "Features|Lags"
         else:
             X = None
 
@@ -177,9 +201,10 @@ class LagsCreator:
         # Create dataframe of output samples.
         if y is not None:
             # Consider the temporal information.
-            dates = y[:, 0, :].flatten()
+            dates = y[:, :, 0].flatten()
             # Not consider temporal information.
-            y = y[:, 1, :]
+            y = y[:, :, 1:]
+            y = y.reshape(y.shape[0], y.shape[1])
         else:
             y = None
             
@@ -190,27 +215,56 @@ class LagsCreator:
             # Flatten the lags of each sample over the rows.
             X = X.reshape((X.shape[0], -1), order = "F")
             # Delete nan columns.
-            try:
-                X = X.astype(float)
-                X = X[:, ~np.isnan(X).any(axis = 0)] # If X contains numeric values.
-            except:   
-                X = X[:, ~pd.isnull(X).any(axis = 0)] # If X doesn't contain numeric values.
+            X = np.stack(list(map(lambda x: x[~np.isnan(x.astype(float))], X)))
 
             # Add the temporal information to the input samples.
-            if self.feature_time:
-                days = [date.day for date in dates]
-                months = [date.month for date in dates]
-                years = [date.year for date in dates]
-                # Create feature time.
-                dates = np.stack([days, months, years], axis = 1)
-                # Add to the data.
-                X = np.concatenate([X, dates], axis = 1)
+            if self.feature_time is not None:
+                if self.single_step:
+                    if y is not None:
+                        temporal_features = list()
+                        for feature in self.feature_time:
+                            if feature is "Day":
+                                days = [date.day for date in dates]
+                                temporal_features.append(days)
+                            if feature is "Month":
+                                months = [date.month for date in dates]
+                                temporal_features.append(months)
+                            if feature is "Year":
+                                years = [date.year for date in dates]
+                                temporal_features.append(years)
+                            if feature is "Dayofweek":
+                                dayofweek = [date.dayofweek for date in dates]
+                                temporal_features.append(dayofweek)
+                        # Create feature time.
+                        dates = np.stack(temporal_features, axis = 1)
+                        # Add to the data.
+                        X = np.concatenate([X, dates], axis = 1)
+                    else:
+                        # Create feature time.
+                        temporal_features = list()
+                        for feature in self.feature_time:
+                            if feature is "Day":
+                                day = (self.group.index[-1] + (self.h)*self.group.index.freq).day
+                                temporal_features.append(day)
+                            if feature is "Month":
+                                month = (self.group.index[-1] + (self.h)*self.group.index.freq).month
+                                temporal_features.append(month)
+                            if feature is "Year":
+                                year = (self.group.index[-1] + (self.h)*self.group.index.freq).year
+                                temporal_features.append(year)
+                            if feature is "Dayofweek":
+                                dayofweek = (self.group.index[-1] + (self.h)*self.group.index.freq).dayofweek
+                                temporal_features.append(dayofweek)
+
+                        dates = np.expand_dims(temporal_features, 0)
+                        # Add to the data.
+                        X = np.concatenate([X, dates], axis = 1)
         else:
             X = None
 
         return X, y
         
-    def to_supervised(self, h = None, dtype = object):
+    def to_supervised(self, h = None, step = None, single_step = False, dtype = object):
         """
         ***Main function***
  
@@ -218,8 +272,9 @@ class LagsCreator:
         
         Parameters
         ----------   
-        h: the independent forecasting horizon to predict if you are using the 'single_step' mode. If 'single_step = False',
-           the 'h' parameter is not taken into account.      
+        h: the forecasting horizon.     
+        step: the temporal step/shift between the samples.
+        single_step: if set, each prediction horizon is created independently from the others.
         dtype: the type returned for the input X and output y samples.
            
         Return
@@ -227,46 +282,53 @@ class LagsCreator:
         X: the input samples.
         y: the output samples.
     
-        """
+        """       
         # Check parameters.
-        if self.single_step and h is None:
-            raise ValueError("If 'single_step' is set, you must provide a value for the 'h' parameter.")
-        if h is not None and h > self.n_out:
-            raise ValueError("The 'h' parameter mustn't be greater than 'n_out' parameter.")      
-        
+        if self.feature_time and not single_step:
+            raise ValueError("You can use the 'feature_time' only if you are working in the 'single_step' mode.")
+            
         # Define some attributes of the class.
         self.h = h
-
-        # Define the input and outputs samples.
+        self.single_step = single_step
+        
+        # Define the input and output samples.
         if self.single_step:
-            y = self.y[h-1:]
+            y = self.y[h-1:self.y.shape[0]]
             X = self.X[:y.shape[0]]
         else:
-            y = self.y
+            y = self.rolling_window(self.y, h)
+            y = y.reshape(y.shape[0], y.shape[2], y.shape[3])
             X = self.X[:y.shape[0]]
-            
+        
+        # Set temporal step between samples.
+        if step is not None:
+            indx = [i for i in chain(range(0, X.shape[0]-1, step), [X.shape[0]-1])]
+            X = X[indx]
+            y = y[indx]
+
         # Save these samples arrays with temporal information to use for the visualization.    
         self.X_draw = X
         self.y_draw = y
-        
-        if self.row_output:
-            # Define input and output samples training dataframes.
-            X, y = self.to_row_output(X, y)
-            # Change the type of the samples.
-            X = X.astype(dtype)
-            y = y.astype(dtype)        
-        else:
-            # Define input samples training arrays removing the temporal information.
-            X = X[:, :, 1:].astype(dtype)
-            # Define output samples training arrays removing the temporal information.
-            y = y[:, 1, :].astype(dtype)
-            
+        self.X_test_draw = self.X_test
+
+        # Define input and output samples training dataframes.
+        X, y = self.to_row_output(X, y)
+        # Change the type of the samples.
+        X = X.astype(dtype)
+        y = y.astype(dtype)    
+        # Define the test input.
+        X_test, _ = self.to_row_output(self.X_test, None)
+        # Change the type of the samples.
+        X_test = X_test.astype(dtype)     
+
         # The output format is changed from array to dataframe.
         if self.return_dataframe:
             # Define input and output samples training dataframes.
             X, y = self.to_dataframe(X, y)
+            # Define input samples test dataframes.
+            X_test, _ = self.to_dataframe(X_test, None)
             
-        return X, y
+        return X, y, X_test   
     
     def highlight_cells(self, x, y):
         """
@@ -278,25 +340,23 @@ class LagsCreator:
         """
         # Define a group for style where the values inside the dataframe are converted to strings.
         group_style = self.group.round(4).astype(str)
+        group_style.index = list(map(lambda x: str(x.date()), group_style.index))
+        
+        # Define the mask of the current sample.
+        mask = ~np.isnan(x[:,1:].astype(float))
 
         # Pandas mask.
-        m = pd.DataFrame(self.mask, index = x[:, 0], columns = self.features)
+        m = pd.DataFrame(mask, index = list(map(lambda x: str(x.date()), x[:, 0])), columns = self.features)
         # Getting (index, column) pairs for True elements of the boolean DataFrame.
         cells_to_color_input = m[m == True].stack().index.tolist()
-        if not self.row_output:
-            cells_to_color_input_extra = m[m == False].stack().index.tolist()
         if y is not None:
-            cells_to_color_output = y[0]
+            cells_to_color_output = list(map(lambda x: str(x.date()), y[:, 0]))
 
         def draw(x):
             df_styler  = group_style.copy()
             # Set particular cell colors for the input.
             for location in cells_to_color_input:
                 df_styler.loc[location[0], location[1]] = "background-color: RGB(0,131,255)"
-            # If the return dataframe is not set, the extra cells of the input filled with nan values are opaque colored.
-            if not self.row_output:
-                for location in cells_to_color_input_extra:
-                    df_styler.loc[location[0], location[1]] = "background-color: RGBA(0,131,255,0.44)"
             # Set particular cell colors for the output.
             if y is not None:
                 for location in cells_to_color_output:
@@ -307,15 +367,16 @@ class LagsCreator:
         sample = group_style.style.apply(lambda x: draw(x), axis = None)
         return sample
         
-    def visualization(self, boundaries = True):
+    def visualization(self, boundaries = True, gif = False):
         """
-        ***Sub-function***
+        ***Main function***
  
         This function allows to visualize the input and output samples created by the process.
         
         Parameters
         ----------
         boundaries: if you want to visualize only the first two an the last two sample points created.
+        gif: if you want to create a gif showing the rolling samples.
         
         Return
         ----------
@@ -327,9 +388,29 @@ class LagsCreator:
             # Keep only boundaries samples.
             self.X_draw = np.concatenate([self.X_draw[:2], self.X_draw[-2:]])
             self.y_draw = np.concatenate([self.y_draw[:2], self.y_draw[-2:]])
-            highlight_dataframes = [self.highlight_cells(x, y) for x, y in zip(self.X_draw, self.y_draw)]
+            highlight_dataframes_train = [self.highlight_cells(x, y) for x, y in zip(self.X_draw, self.y_draw)]
+            highlight_dataframes_test = [self.highlight_cells(x, None) for x in self.X_test_draw]
         else:
-            highlight_dataframes = [self.highlight_cells(x, y) for x, y in zip(self.X_draw, self.y_draw)]
+            highlight_dataframes_train = [self.highlight_cells(x, y) for x, y in zip(self.X_draw, self.y_draw)]
+            highlight_dataframes_test = [self.highlight_cells(x, None) for x in self.X_test_draw]
             
-        return highlight_dataframes
+        if gif:
+            # Save the samples into figures.
+            dir = "./gif"
+            if not os.path.exists(dir):
+                os.makedirs(dir)
+            else:
+                shutil.rmtree(dir)           
+                os.makedirs(dir)
+            # Save figures.
+            for i,train in enumerate(highlight_dataframes_train):
+                train.export_png(dir + "/%d.png" % i)
+                
+            # Create gif.
+            images = []
+            for i in range(len(highlight_dataframes_train)):
+                images.append(imageio.imread(dir + "/%d.png" % i))
+            imageio.mimsave(dir + "/lags_creator.gif", images, format = "GIF", duration = 1)
+            
+        return highlight_dataframes_train, highlight_dataframes_test 
     

@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from ipywidgets import interact, widgets, fixed
 from IPython.display import display
+plt.style.use("seaborn")
 
 # Python module.
 #
@@ -75,8 +76,10 @@ class TsIP:
                 # Define the style for matplotlib library.
                 if self.style == "lines+markers":
                     style = ".-"
-                else:
-                    style = "-"              
+                elif self.style == "lines":
+                    style = "-"  
+                elif self.style == "mix":
+                    style = "mix" 
 
                 if self.comparison:
                     # Add the time-series to the figure.
@@ -87,7 +90,13 @@ class TsIP:
                 else:
                     # Add the time-series to the figure.
                     for column in df.columns:  
-                        df[column].plot(ax = fig.gca(), label = column, style = style)
+                        if style != "mix":
+                            df[column].plot(ax = fig.gca(), label = column, style = style)
+                        else:
+                            if df[column].loc[df[column].first_valid_index():df[column].last_valid_index()].isna().sum() > 0:
+                                df[column].dropna(how = "all").plot(ax = fig.gca(), label = column, style = ".-")
+                            else:
+                                df[column].plot(ax = fig.gca(), label = column, style = "-")
 
                 # Set legend.
                 ax.legend(title = df.columns.name, loc = "center left", bbox_to_anchor = (1.0, 0.5))
@@ -126,8 +135,17 @@ class TsIP:
                 else:
                     # Add the time-series to the figure.
                     for column in df.columns:
-                        fig.add_trace(go.Scatter(x = df.index, y = df[column], name = column, mode = self.style, 
-                                                 showlegend = True, line = dict(width = 1.5)))
+                        if self.style != "mix":
+                            fig.add_trace(go.Scatter(x = df.index, y = df[column], name = column, mode = self.style, 
+                                                     showlegend = True, line = dict(width = 1.5)))
+                        else:
+                            if df[column].loc[df[column].first_valid_index():df[column].last_valid_index()].isna().sum() > 0:
+                                fig.add_trace(go.Scatter(x = df[column].dropna(how = "all").index, y = df[column].dropna(how = "all"), 
+                                                         name = column, mode = "lines+markers", showlegend = True, 
+                                                         line = dict(width = 1.5)))
+                            else:
+                                fig.add_trace(go.Scatter(x = df.index, y = df[column], name = column, mode = "lines", 
+                                                         showlegend = True, line = dict(width = 1.5)))
 
                 # Edit the layout of the y-axis.
                 fig.update_layout(yaxis_title = dict(text = self.yaxis, font = dict(size = 10)))
@@ -187,9 +205,9 @@ class TsIP:
         
         # Define title.
         if self.title:
-            title_name = self.title + " - " + name
+            title_name = self.title + " - " + str(name)
         else:
-            title_name = name
+            title_name = str(name)
         
         # Visualization of the time-series.
         self.plot_df_level_1(graph, group, title_name, group2)
@@ -240,9 +258,9 @@ class TsIP:
             
             # Define title.
             if self.title:
-                title_name = self.title + " - " + name1 + " - " + name2
+                title_name = self.title + " - " + str(name1) + " - " + str(name2)
             else:
-                title_name = name1 + " - " + name2
+                title_name = str(name1) + " - " + str(name2)
 
             # Visualization of the time-series.
             self.plot_df_level_1(graph, group, title_name, group2)
@@ -296,9 +314,9 @@ class TsIP:
             
             # Define title.
             if self.title:
-                title_name = self.title + " - " + name1 + " - " + name2 + " - " + name3
+                title_name = self.title + " - " + str(name1) + " - " + str(name2) + " - " + str(name3)
             else:
-                title_name = name1 + " - " + name2 + " - " + name3
+                title_name = str(name1) + " - " + str(name2) + " - " + str(name3)
                 
             # Visualization of the time-series.
             self.plot_df_level_1(graph, group, title_name, group2)
@@ -318,7 +336,7 @@ class TsIP:
         ----------
         title: the title to add to the figures. 
         yaxis: a string value to add on y axis.
-        style: the style of the plots. It can be 'lines' or 'lines+markers'.
+        style: the style of the plots. It can be 'lines', 'lines+markers' or 'mix'.
         first_last_valid_index_group: if you want to plt the time-series groups using as reference datetime only the values
            between their first and last valid indeces and not using the entire datetime object of the dataframe.
         matplotlib: if you want to use matplotlib (True) or plotly (False) library to visualize the time-series.
@@ -416,13 +434,14 @@ class TsIP:
                 out = widgets.interactive_output(self.plot_df_level_4, {"name1": w1, "name2": w2, "name3": w3, "graph": w4, "df": fixed(self.df), "df2": fixed(self.df2)})
                 display(hbox, w4, out)    
    
-    def interactive_plot_predictions(self, quantiles = True, title = None, matplotlib = False, yaxis = None, style = "lines"):
+    def interactive_plot_predictions(self, quantiles = True, title = None, matplotlib = False, yaxis = None, style = "lines", 
+                                     first_last_valid_index_group = False):
         """
         ***Main function***
         
         This main function allows to interactively plot the predictions statistic of time-series stored into a multi-index 
         columns dataframe with two levels. For each group of the level 0, the time-series into the level 1 must be:
-        ['predicted_mean', 'original', 'predicted_quantile_25', 'predicted_quantile_75'].
+        ['predicted_mean', 'original', 'lower_quantile', 'upper_quantile'].
         
         Parameters
         ----------
@@ -440,10 +459,17 @@ class TsIP:
         self.yaxis = yaxis
         self.style = style
         self.matplotlib = matplotlib 
+        self.first_last_valid_index_group = first_last_valid_index_group
         
         def plot_statistic_prediction(name, df):
             # Select the subdataframe thanks to an interactive button.
             group = df[name]
+            
+            if self.first_last_valid_index_group:
+                # Adjust time-series group.
+                first_idx = group.first_valid_index()
+                last_idx = group.last_valid_index()
+                group = group.loc[first_idx:last_idx]
             
             if self.matplotlib:
                 fig, ax = plt.subplots(figsize = (20, 7))
@@ -457,10 +483,10 @@ class TsIP:
                 # Plot entire original serie.
                 group["original"].plot(ax = fig.gca(), color = "#1281FF", label = "original", style = style)
                 # Plot predicted serie.
-                group["predicted_mean"].plot(ax = fig.gca(), color = "#FF8F17", label = "predicted", style = style)
+                group["forecast"].plot(ax = fig.gca(), color = "#FF8F17", label = "forecast", style = style)
                 # Plot quantiles
                 if self.quantiles:
-                    ax.fill_between(x = group["predicted_mean"].index, y1 = group["predicted_quantile_25"], y2 = group["predicted_quantile_75"], color = "#B6B6B6", alpha = 0.5)
+                    ax.fill_between(x = group["forecast"].index, y1 = group["lower_quantile"], y2 = group["upper_quantile"], color = "#B6B6B6", alpha = 0.5)
                 # Set legend.
                 ax.legend(title = "Statistics", loc = "center left", bbox_to_anchor = (1.0, 0.5))
                 # Set axis names.
@@ -475,18 +501,18 @@ class TsIP:
                 fig = go.Figure()
                 # Plot quantiles.
                 if self.quantiles:
-                    fig.add_trace(go.Scatter(x = group["predicted_quantile_25"].index, y = group["predicted_quantile_25"], 
-                                             name = "quantile 25", fill = None, mode = "lines", 
+                    fig.add_trace(go.Scatter(x = group["lower_quantile"].index, y = group["lower_quantile"], 
+                                             name = "lower_quantile", fill = None, mode = "lines", 
                                              line = dict(width = .5, color = "#B6B6B6")))
-                    fig.add_trace(go.Scatter(x = group["predicted_quantile_75"].index, y = group["predicted_quantile_75"], 
-                                             name = "quantile 75", fill = "tonexty", mode = "lines", 
+                    fig.add_trace(go.Scatter(x = group["upper_quantile"].index, y = group["upper_quantile"], 
+                                             name = "upper_quantile", fill = "tonexty", mode = "lines", 
                                              line = dict(width = .5, color = "#B6B6B6")))
                 # Plot original serie.
                 fig.add_trace(go.Scatter(x = group["original"].index, y = group["original"], mode = self.style, 
                                          name = self.title, legendgroup = self.title, 
                                          line = dict(width = 1.5, color = "#1281FF")))
                 # Plot predicted serie.
-                fig.add_trace(go.Scatter(x = group["predicted_mean"].index, y = group["predicted_mean"], 
+                fig.add_trace(go.Scatter(x = group["forecast"].index, y = group["forecast"], 
                                          name = "prediction", mode = self.style, line = dict(width = 1.5, color = "#FF8F17")))
 
                 # Edit the layout of the y-axis.
@@ -505,5 +531,3 @@ class TsIP:
                                   disabled = False)
         p = interact(plot_statistic_prediction, name = w, df = fixed(self.df))       
                
-
-
