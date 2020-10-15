@@ -9,6 +9,4 @@ The second part of the work will consist of integrating additional data sources 
 
 ## Useful links
 
-Google Sites Page: https://sites.google.com/isi.it/isi-wfp/home
-
 Overleaf: https://it.overleaf.com/project/5f083f8126d73a000148c1eb
