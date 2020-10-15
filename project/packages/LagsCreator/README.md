@@ -2,7 +2,9 @@
 
 This module allows us to create lag-features samples for time-series forecasting purposes. The module supports different configurations to get the outputs into several formats. In order to correctly use this module, it is necessary to have a pandas dataframe `df` with single/multiple columns representing the time-series. For example, let's take the following dataframe `df`:
 
+<p align="center">
 <img src="./images/dataframe.png" width="120">
+</p>
 
 N.B. The dataframe `df` need to have a pandas datetime index with an appropriate frequency set.
 
