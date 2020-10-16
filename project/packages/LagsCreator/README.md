@@ -47,11 +47,11 @@ The LagsCreator module also provide a visualization function in order to better 
 Setting the following parameters:
 
     creator = LagsCreator(df["Group 1"], lags_dict, "B", return_dataframe = True)
-    X_train, y_train = creator.to_supervised(h = 2, single_step = True)
+    X_train, y_train, X_test = creator.to_supervised(h = 2, single_step = True)
                                                                    
 Now, we can visualize the samples created using the `visualization` function:
 
-    train = creator.visualization(boundaries = False)
+    train, test = creator.visualization(boundaries = False)
     
 If you want to see the 3-th training sample, we get it through the variable `train[2]`: 
 
