@@ -1,3 +1,4 @@
+from IPython.display import display, Image
 import dataframe_image as dfi
 from itertools import chain
 import numpy as np
@@ -18,13 +19,11 @@ class LagsCreator:
     
     This module allows to create lag-features for time-series forecasting purposes. It supports different configurations 
     to get the outputs into several formats. It is also possible to visualize the lag-features through 
-    an highlighting of the cells of the dataframe.
+    an highlighting of the cells of the dataframe (see visualization method).
     
     """
     def __init__(self, group, lags_dictionary, target, return_dataframe = False, feature_time = None):
         """
-        ***Initialization function***
- 
         Initialization of the LagsCreator class.
         
         Parameters
@@ -57,35 +56,65 @@ class LagsCreator:
         group = group.drop(columns = features_to_remove) 
         # Define all the remaining features.
         features = group.columns
-
+        
         # Define the last temporal index of the first expanding window such that it is possible to start collecting valid data for each time-series.
         index = max(group[group.columns.difference(static_features)].apply(lambda x: x.dropna().iloc[:np.max(lags_dictionary[x.name])].index[-1]).values)
         subgroup = group.loc[:index]
-        # Create all the expanding windows using the numpy roll function until the end of the input dataframe.
-        difference = len(group) - len(subgroup)
-        group_np = group.reset_index().values
-        expanding_windows = np.stack([np.roll(group_np, difference-i, axis = 0) for i in range(difference+1)])
-
-        # Create mask based on lags into 'lags_dictionary' to pass over the input samples.
-        mask = np.full(shape = (expanding_windows.shape[1], len(features)+1), fill_value = False) 
-        # Set the value for the time column.
-        mask[:, 0] = True
         
-        # Create mask values for the features of each sample.
-        def get_(x):
-            mask_x = mask.copy()
+        # Check if dataframe contains some nan values. If not, the procedure to create the samples is build to be faster.
+        nans = group.isnull().sum().sum()
+
+        # Create input samples using two procedures.
+        if nans > 0:
+            # Create all the expanding windows using the numpy roll function until the end of the input dataframe.
+            difference = len(group) - len(subgroup)
+            group_np = group.reset_index().values
+            expanding_windows = np.stack([np.roll(group_np, difference-i, axis = 0) for i in range(difference+1)])
+
+            # Create mask based on lags into 'lags_dictionary' to pass over the input samples.
+            mask = np.full(shape = (expanding_windows.shape[1], len(features)+1), fill_value = False) 
+            # Set the value for the time column.
+            mask[:, 0] = True
+
+            # Create mask values for the features of each sample.
+            def get_(x):
+                mask_x = mask.copy()
+                for i, feature in enumerate(features):
+                    if feature in static_features:
+                        mask_x[:, i+1][-1] = True
+                    else:
+                        lags = np.argwhere(~np.isnan(x[:,i+1].astype(float))).flatten()[-lags_dictionary[feature]]
+                        mask_x[:, i+1][lags] = True          
+                # Create input sample using a mask.
+                x = np.ma.masked_array(x, mask = ~mask_x, fill_value = 0).filled(np.nan)
+                return x
+
+            # Input samples.
+            X = np.stack(list(map(get_, expanding_windows)))
+        else:
+            # Define the boolean mask for the creation of lag-features for the time-series.
+            # Define the reference size of the window (time-step dimension).
+            window_size = max(map(np.max, list(lags_dictionary.values())))
+            # Create mask based on lags into 'lags_dictionary' to pass over the input samples.
+            mask = np.full(shape = (window_size, len(features)), fill_value = False)   
             for i, feature in enumerate(features):
                 if feature in static_features:
-                    mask_x[:, i+1][-1] = True
+                    mask[:, i][-1] = True 
                 else:
-                    lags = np.argwhere(~np.isnan(x[:,i+1].astype(float))).flatten()[-lags_dictionary[feature]]
-                    mask_x[:, i+1][lags] = True          
-            # Create input sample using a mask.
-            x = np.ma.masked_array(x, mask = ~mask_x, fill_value = 0).filled(np.nan)
-            return x
+                    lags = lags_dictionary[feature]
+                    mask[:, i][-lags] = True 
 
-        # Input samples.
-        X = np.stack(list(map(get_, expanding_windows)))
+            # Create input samples.
+            # Rolling a no masked window over the dataframe based on the maximum value of the 'lags_dictionary'.
+            X = self.rolling_window(group.reset_index().values, window_size)
+            # Add the mask to the input samples based on lags.
+            # Add the temporal information to the mask in order to always mantain the temporal information.
+            mask_with_time = np.concatenate([np.expand_dims(np.array([True]*window_size), 1), mask], axis = 1)
+            # Expand the mask to all the samples.
+            mask_with_time = np.tile(mask_with_time, (X.shape[0], 1, 1))
+            # Define input samples with defined lags (with also temporal information). 
+            # Shape: (n_samples, max lag, n_features + 1). +1 is referred to the temporal information. 
+            X = np.ma.masked_array(X, mask = ~mask_with_time, fill_value = 0).filled(np.nan) 
 
         # Create output samples. 
         # Shape: (n_samples, n_prediction_horizons, 1 + 1). +1 is referred to the temporal information. 
@@ -126,14 +155,13 @@ class LagsCreator:
         self.group = group
         self.target = target
         self.features = features
+        self.nans = nans
         self.return_dataframe = return_dataframe
         self.feature_time = feature_time
         self.columns_input = columns_input
         
     def rolling_window(self, x, window):
         """
-        ***Sub-function***
- 
         This function allows to rolling a window over a numpy array.
         
         Parameters
@@ -153,8 +181,6 @@ class LagsCreator:
     
     def to_dataframe(self, X, y):
         """
-        ***Sub-function***
- 
         This function allows to convert the input and output samples into dataframes format.
         
         Parameters
@@ -188,8 +214,6 @@ class LagsCreator:
     
     def to_row_output(self, X, y):
         """
-        ***Sub-function***
- 
         This function allows to convert the input and output samples into row output format.
         
         Parameters
@@ -214,8 +238,12 @@ class LagsCreator:
             X = X[:, :, 1:]
             # Flatten the lags of each sample over the rows.
             X = X.reshape((X.shape[0], -1), order = "F")
-            # Delete nan columns.
-            X = np.stack(list(map(lambda x: x[~np.isnan(x.astype(float))], X)))
+            if self.nans > 0:
+                # Delete nan columns.
+                X = np.stack(list(map(lambda x: x[~np.isnan(x.astype(float))], X)))
+            else:
+                # Delete nan columns.
+                X = X[:, ~np.isnan(X.astype(float)).any(axis = 0)] 
 
             # Add the temporal information to the input samples.
             if self.feature_time is not None:
@@ -266,8 +294,6 @@ class LagsCreator:
         
     def to_supervised(self, h = None, step = None, single_step = False, dtype = object):
         """
-        ***Main function***
- 
         This function allows to create the input X and output y samples to use for time-series forecasting purposes.
         
         Parameters
@@ -302,6 +328,7 @@ class LagsCreator:
         
         # Set temporal step between samples.
         if step is not None:
+            # Keep the samples with a step between them but keeping always the last sample.
             indx = [i for i in chain(range(0, X.shape[0]-1, step), [X.shape[0]-1])]
             X = X[indx]
             y = y[indx]
@@ -332,8 +359,6 @@ class LagsCreator:
     
     def highlight_cells(self, x, y):
         """
-        ***Sub-function***
- 
         This function draws the cells of the dataframe that belongs to the lag features for the current input sample x and
         output sample y.
 
@@ -367,16 +392,16 @@ class LagsCreator:
         sample = group_style.style.apply(lambda x: draw(x), axis = None)
         return sample
         
-    def visualization(self, boundaries = True, gif = False):
+    def visualization(self, boundaries = True, gif = False, fps = 1, width = 150):
         """
-        ***Main function***
- 
         This function allows to visualize the input and output samples created by the process.
         
         Parameters
         ----------
         boundaries: if you want to visualize only the first two an the last two sample points created.
         gif: if you want to create a gif showing the rolling samples.
+        fps: frame per second of the created gif.
+        width: the with of the created gif
         
         Return
         ----------
@@ -396,21 +421,24 @@ class LagsCreator:
             
         if gif:
             # Save the samples into figures.
-            dir = "./gif"
+            dir = "./visualization"
             if not os.path.exists(dir):
                 os.makedirs(dir)
             else:
                 shutil.rmtree(dir)           
                 os.makedirs(dir)
             # Save figures.
+            images = list()
             for i,train in enumerate(highlight_dataframes_train):
+                # Create figure from dataframe styler.
                 train.export_png(dir + "/%d.png" % i)
+                images.append(imageio.imread(dir + "/%d.png" % i))
                 
             # Create gif.
-            images = []
-            for i in range(len(highlight_dataframes_train)):
-                images.append(imageio.imread(dir + "/%d.png" % i))
-            imageio.mimsave(dir + "/lags_creator.gif", images, format = "GIF", duration = 1)
+            imageio.mimwrite(dir + "/GIF.gif", images, fps = fps)
             
-        return highlight_dataframes_train, highlight_dataframes_test 
+            with open(dir + "/GIF.gif", "rb") as f:
+                display(Image(data = f.read(), format = "png", width = width))
+            
+        return highlight_dataframes_train, highlight_dataframes_test
     

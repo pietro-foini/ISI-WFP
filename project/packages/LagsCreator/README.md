@@ -38,7 +38,13 @@ As an alternative to the direct approach there is an approach that we call `sing
 
 ## Visualization
 
-The LagsCreator module also provide a visualization function in order to better examine the samples created. Supposing to use the example dataframe `df` and we create the following samples using the previous `lags_dictionary`.
+The LagsCreator module also provide a visualization function in order to better examine the samples created. Supposing to use the dataframe `df` and we create the following samples using the previous `lags_dictionary`.
+
+<p align="center">
+<img src="./images/dataframe2.png" width="120">
+</p>
+
+Setting the following parameters:
 
     creator = LagsCreator(df["Group 1"], lags_dict, "B", return_dataframe = True)
     X_train, y_train = creator.to_supervised(h = 2, single_step = True)
@@ -53,4 +59,10 @@ If you want to see the 3-th training sample, we get it through the variable `tra
 <img src="./images/visualization.png" width="120">
 </p>
 
-It is also possible to show the gif of the rolling samples created (all the gif showed into this documentation are created through the visualization method of the LagsCreator class).
+It is also possible to show the gif of the rolling samples created (all the gif showed into this documentation are created through the visualization method of the LagsCreator class):
+
+    train = creator.visualization(boundaries = False, gif = True)
+
+<p align="center">
+<img src="./images/gif3.gif" width="120">
+</p>
