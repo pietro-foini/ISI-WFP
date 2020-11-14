@@ -1,5 +1,3 @@
-from custom_correlation import corr_pairwise
-from rolling_window import rolling_window
 from itertools import permutations
 import pandas as pd
 import numpy as np
@@ -15,14 +13,14 @@ def calc_ste(X, Y, m = 3, h = 1, kx = 1, ky = 1):
     """Symbolic Transfer Entropy[1][2].
     
     This code allows to compute the symbolic transfer entropy between two time-series X and Y given an embedding dimension m. 
-    The first step of the algorithm works in order to convert the two time-series into a symbolized representation.
+    The first step of the algorithm works in order to convert the two time-series into corresponding symbolized representation.
     Let's suppose that X = {x(1), x(2), ..., x(N)} and Y = {y(1), y(2), ..., y(N)} are already the symbolized time-series 
     obtained from the original ones. Using these symbolized time-series, the standard formula of the transfer entropy to measure 
     the information flow from X to Y is the following:
     
     T_XY = ∑ p(y(i+1), y(i), x(i))·log2( p(y(i+1)|x(i),y(i)) / p(y(i+1)|y(i)) )
     
-    There also exist other formulations, for example considering a more large histroy lengths. Defining two
+    There also exist other formulations, for example considering a more large history lengths. Defining two
     parameters kx and ky, it is possible to select not only the last temporal lags as reference for the two time-series:
     
     T_XY = ∑ p(y(i+1), y(i), ..., y(i-ky-1), x(i), ..., x(i-kx-1))·log2(p(y(i+1)|y(i), ..., y(i-ky-1), x(i), ..., x(i-kx-1)) / p(y(i+1)|y(i), ..., y(i-ky-1)))   
@@ -63,10 +61,10 @@ def calc_ste(X, Y, m = 3, h = 1, kx = 1, ky = 1):
     dict_pattern_index = {patterns[i]: i for i in range(len(patterns))}
     
     # Pattern time-series X.
-    X = np.argsort(rolling_window(X, m, axes = 0)) + 1
+    X = np.argsort(rolling_window(X, m).T) + 1
     X = np.array([dict_pattern_index[tuple(x)] for x in X])
     # Pattern time-series Y.
-    Y = np.argsort(rolling_window(Y, m, axes = 0)) + 1
+    Y = np.argsort(rolling_window(Y, m).T) + 1
     Y = np.array([dict_pattern_index[tuple(y)] for y in Y])
 
     # Define the length of the two time-series.
@@ -125,7 +123,7 @@ def calc_te(X, Y, h = 1, kx = 1, ky = 1):
     R:
     >>> library(RTransferEntropy)
     >>> calc_te(X, Y, lx = 1, ly = 1, q = 1, entropy ="Shannon", shuffles = 100, type = "bins", bins = 6)
-    N.B. the number of bins must be change based on the number of symbols/discrete numbers into the two time-series.
+    N.B. the number of bins must be changed based on the number of symbols/discrete numbers into the two time-series.
     
     Returns
     ----------
@@ -173,7 +171,7 @@ def entropy_rate(X, m = 3, h = 1, k = 1):
     ----------
     
     X: the time-series X.
-    m: the embedding dimension; typical values 3<=m<=7
+    m: the embedding dimension; typical values 3<=m<=7.
     h: the h parameter for the future step; h >= 1.
     k: the k parameter for the lags steps of X time-series; k >= 1.
     
@@ -188,9 +186,55 @@ def entropy_rate(X, m = 3, h = 1, k = 1):
     dict_pattern_index = {patterns[i]: i for i in range(len(patterns))}
     
     # Pattern time-series X.
-    X = np.argsort(rolling_window(X, m, axes = 0)) + 1
+    X = np.argsort(rolling_window(X, m).T) + 1
     X = np.array([dict_pattern_index[tuple(x)] for x in X])
     
+    # Define the length of the two time-series.
+    N = X.shape[0]
+
+    # Let's define the future horizon to take into consideration.
+    X_h = np.expand_dims(np.roll(X, shift = -h, axis = 0), axis = 1)
+
+    # Create histories length of the two time-series.
+    Xk = np.stack([np.roll(X, shift = i, axis = 0) for i in range(k)], axis = 1)
+
+    # Define all the unique combinations/states of these two time-series.
+    states = np.unique(np.concatenate([Xk, X_h], axis = 1)[k-1:-h], axis = 0)
+    
+    # Define the concatenations of all these time-series lags.
+    concatenation = np.concatenate([Xk, X_h], axis = 1)
+
+    H = 0
+    for state in states:
+        prob1 = (concatenation == state).all(axis = 1).astype(int)[k-1:N-h].sum()/(N-(h+k-1))
+        prob2 = (concatenation[:,:-1] == state[:-1]).all(axis = 1).astype(int)[k-1:N-h].sum()/(N-(h+k-1))
+
+        prob = (prob1) * np.log2(prob1/prob2)
+
+        if prob != np.nan:
+            H += prob 
+
+    return -H
+
+def entropy_rate_discrete(X, h = 1, k = 1):
+    """
+    This function computes the conditional Shannon entropy (entropy rate) for a  discrete time-series. More precisely, it returns 
+    the following quantity:
+    
+            H(x(i+h)|x(i), ..., x(i-kx-1))
+    
+    Parameters
+    ----------
+    
+    X: the time-series X.
+    h: the h parameter for the future step; h >= 1.
+    k: the k parameter for the lags steps of X time-series; k >= 1.
+    
+    Notes
+    ----------
+    This function is equal to the function 'entropy_rate' of the package pyinform.
+    
+    """
     # Define the length of the two time-series.
     N = X.shape[0]
 
@@ -227,7 +271,7 @@ def calc_entropy_rates_for_te(X, Y, m = 3, h = 1, kx = 1, ky = 1):
     
     This function will be return the two conditional entropies H1 and H2. 
     
-    N.B. The factor H1 is also used as a normalization factor for the transfer entropy T_XY.
+    N.B. The factor H1 can also be used as a normalization factor for the transfer entropy T_XY.
     
     """
     
@@ -237,10 +281,10 @@ def calc_entropy_rates_for_te(X, Y, m = 3, h = 1, kx = 1, ky = 1):
     dict_pattern_index = {patterns[i]: i for i in range(len(patterns))}
     
     # Pattern time-series X.
-    X = np.argsort(rolling_window(X, m, axes = 0)) + 1
+    X = np.argsort(rolling_window(X, m).T) + 1
     X = np.array([dict_pattern_index[tuple(x)] for x in X])
     # Pattern time-series Y.
-    Y = np.argsort(rolling_window(Y, m, axes = 0)) + 1
+    Y = np.argsort(rolling_window(Y, m).T) + 1
     Y = np.array([dict_pattern_index[tuple(y)] for y in Y])
     
     # Define the length of the two time-series.
@@ -295,4 +339,50 @@ def compute_T(df, m = 3, h = 1, kx = 1, ky = 1):
     T = corr_pairwise(df, lambda x, y: calc_ste(x.values, y.values, m = m, h = h, kx = kx, ky = ky))
     
     return T
+
+def rolling_window(x, window):
+    """
+    This function allows to rolling a window over a numpy array.
+
+    Parameters
+    ----------
+    x: the input array.
+    window: the length of the window to slide.
+
+    """
+    x = np.array(x)
+    # Set shape.
+    shape = list(x.shape)
+    shape[0] = x.shape[0] - window + 1
+    shape.insert(len(shape)-1, window)
+    # Set strides.
+    strides = list(x.strides)
+    strides.insert(0, strides[0])
+    return np.lib.stride_tricks.as_strided(x, shape = tuple(shape), strides = tuple(strides))
+
+def corr_pairwise(df, method = None):
+    """
+    This function returns a correlation matrix given a custom method.
+
+    Parameters
+    ----------
+    df: dataframe.
+    method: the function to use to build the correlation matrix.
+
+    """
+    # Define the correlation matrix to fill with values.
+    corr = pd.DataFrame(index = df.columns, columns = df.columns)
     
+    def interation_1(serie):
+        source = serie
+        
+        def interation_2(serie, source):
+            target = serie
+            correlation = method(source, target)
+            corr[source.name].loc[target.name] = correlation
+
+        df.apply(interation_2, args = [source])
+     
+    df.apply(interation_1)
+    
+    return corr
