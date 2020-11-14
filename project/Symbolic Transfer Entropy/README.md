@@ -88,18 +88,6 @@ Using the generalized formula (6) of the transfer entropy, we can play with <img
 <img src="./images/search_kx.png" width="300">
 </p>
 
-Similarly, we use the STE and go in search of the *plateau* on the graph of STE over the <img src="https://render.githubusercontent.com/render/math?math=k_x">.
-
-#### Toy models
-
-<p align="center"> 
-<img src="./images/toy_model1.png" width="700">
-</p>
-
-<p align="center"> 
-<img src="./images/toy_model2.png" width="700">
-</p>
-
 ## References
 
 [1]. "Symbolic transfer entropy", M. Staniek and K. Lehnertz, 2008.
