@@ -13,4 +13,4 @@ In order to investigate the food security phenomenon, we must begin by going thr
 - *Rainfall & Vegetation*: this folder contains the files for the creation of the time-series about the natural events at administrative level;
 - *Ramadan*: this folder contains the files for the creation of the time-series about the ramadan at administrative level;
 - *Reduced Coping Strategy Index (rCSI)*: this folder contains the files for the creation of the time-series about the Reduced Coping STrategy Index at administrative level;
-- *Shape Files*: this folder contains the information about the geographical location of the administrative regions;
+- *Shape Files*: this folder contains the information about the geographical location of the administrative regions.
