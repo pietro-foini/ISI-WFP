@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from ipywidgets import interact, widgets, fixed
 from IPython.display import display
-plt.style.use("seaborn")
+plt.style.use("default")
 
 # Python module.
 #
@@ -69,7 +69,7 @@ class TsIP:
             # Plot of the time-series.
             if graph == "Time-series":
                 # Create figure.
-                fig, ax = plt.subplots(figsize = (20, 7))
+                fig, ax = plt.subplots(figsize = (15, 5))
                 # Set colorway of the time-series.
                 ax.set_prop_cycle("color", colorway)
                 
@@ -101,16 +101,17 @@ class TsIP:
                 # Set legend.
                 ax.legend(title = df.columns.name, loc = "center left", bbox_to_anchor = (1.0, 0.5))
                 # Set axis names.
-                ax.set_ylabel(self.yaxis, fontsize = 10)
-                ax.set_xlabel("Datetime", fontsize = 10)
+                ax.set_ylabel(self.yaxis, fontsize = 15)
+                ax.set_xlabel("Datetime", fontsize = 15)
                 # Set title.
-                ax.set_title(title_name, fontsize = 15)
+                ax.set_title(title_name, fontsize = 18)
+                ax.tick_params(labelsize = 15)
                 ax.autoscale()
                 plt.show()
             # Plot of the missing values.
             if graph == "Missing values":  
                 # Create figure.
-                fig, ax = plt.subplots(figsize = (20, 7))
+                fig, ax = plt.subplots(figsize = (15, 5))
                 # Visualization of the missing values of the current time-series.
                 miss = df.notnull().astype("int")
                 # Create heatmap.
@@ -435,14 +436,14 @@ class TsIP:
                 display(hbox, w4, out)    
    
     def interactive_plot_predictions(self, quantiles = True, title = None, matplotlib = False, yaxis = None, style = "lines", 
-                                     first_last_valid_index_group = False):
+                                     first_last_valid_index_group = False, save_path = None):
         """
         ***Main function***
-        
+
         This main function allows to interactively plot the predictions statistic of time-series stored into a multi-index 
         columns dataframe with two levels. For each group of the level 0, the time-series into the level 1 must be:
         ['predicted_mean', 'original', 'lower_quantile', 'upper_quantile'].
-        
+
         Parameters
         ----------
         quantiles: if you want to plot the predicted quantiles.
@@ -451,7 +452,7 @@ class TsIP:
         style: the style of the plots. It can be 'lines' or 'lines+markers'.
         matplotlib: if you want to use matplotlib (True) or plotly (False) library to visualize the time-series.
         comparison: if you want to compare the time-series of two equal hierarchical dataframes (df and df2).
-           
+
        """
         # Define the parameters as attributes of the class.
         self.quantiles = quantiles
@@ -460,41 +461,46 @@ class TsIP:
         self.style = style
         self.matplotlib = matplotlib 
         self.first_last_valid_index_group = first_last_valid_index_group
-        
+        self.save_path = save_path
+
         def plot_statistic_prediction(name, df):
             # Select the subdataframe thanks to an interactive button.
             group = df[name]
-            
+
             if self.first_last_valid_index_group:
                 # Adjust time-series group.
                 first_idx = group.first_valid_index()
                 last_idx = group.last_valid_index()
                 group = group.loc[first_idx:last_idx]
-            
+
             if self.matplotlib:
-                fig, ax = plt.subplots(figsize = (20, 7))
-                
+                fig, ax = plt.subplots(figsize = (15, 7))
+
                 # Define the style for matplotlib library.
                 if self.style == "lines+markers":
                     style = ".-"
                 else:
                     style = "-" 
-                    
+
                 # Plot entire original serie.
-                group["original"].plot(ax = fig.gca(), color = "#1281FF", label = "original", style = style)
+                group["original"].plot(ax = fig.gca(), color = "#1281FF", label = "Actual", style = style)
                 # Plot predicted serie.
-                group["forecast"].plot(ax = fig.gca(), color = "#FF8F17", label = "forecast", style = style)
+                group["forecast"].plot(ax = fig.gca(), color = "#FF8F17", label = "Forecast", style = style)
                 # Plot quantiles
                 if self.quantiles:
                     ax.fill_between(x = group["forecast"].index, y1 = group["lower_quantile"], y2 = group["upper_quantile"], color = "#B6B6B6", alpha = 0.5)
                 # Set legend.
-                ax.legend(title = "Statistics", loc = "center left", bbox_to_anchor = (1.0, 0.5))
+                ax.legend(loc = "best", prop = {"size": 15})
                 # Set axis names.
-                ax.set_ylabel(self.yaxis, fontsize = 10)
-                ax.set_xlabel("Datetime", fontsize = 10)
+                ax.set_ylabel(self.yaxis, fontsize = 15)
+                ax.set_xlabel("Datetime", fontsize = 15)
                 # Set title.
                 ax.set_title(self.title, fontsize = 15)
-                ax.autoscale()
+                #ax.autoscale()
+                
+                if self.save_path is not None:
+                    fig.savefig(save_path, bbox_inches = "tight", dpi = 300)
+                
                 plt.show()
             else:
                 # Create figure.
@@ -523,11 +529,11 @@ class TsIP:
                 fig.update_layout(xaxis = dict(title = "Datetime", rangeselector = dict(), rangeslider = dict(visible = True), 
                                                type = "date"))
                 fig.show()
-                
+
         # 2 LEVELS, AXIS 1.
         # Create figure.
         w = widgets.ToggleButtons(options = self.df.columns.get_level_values(0).unique(), 
                                   description = self.df.columns.get_level_values(0).name, 
                                   disabled = False)
-        p = interact(plot_statistic_prediction, name = w, df = fixed(self.df))       
+        p = interact(plot_statistic_prediction, name = w, df = fixed(self.df))  
                

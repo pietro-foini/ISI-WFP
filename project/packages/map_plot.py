@@ -3,7 +3,7 @@ import geopandas as gpd
 import numpy as np
 import warnings
 warnings.filterwarnings("ignore")
-plt.style.use("seaborn")
+plt.style.use("default")
 
 # Python module.
 #
@@ -13,7 +13,7 @@ plt.style.use("seaborn")
 # Year: 2020
     
 def draw_adminstratas(country, adminstratas, folder_to_shapefiles, figsize = (15, 10), cmap = "bwr", annotation = False, 
-                      annotation_selected = False):
+                      annotation_selected = False, path_to_save = None, dpi = 100):
     """
     This module allows to plot the political boundaries of the selected country using shapefiles. More precisely, it allows to view the
     provinces (adminstratas) provided by the users.
@@ -45,10 +45,12 @@ def draw_adminstratas(country, adminstratas, folder_to_shapefiles, figsize = (15
             ax.annotate(label, xy = (x, y), xytext = (3, 3), textcoords = "offset points", color = "black")
     ax.set_title(country)
     plt.axis("off")
+    if path_to_save is not None:
+        fig.savefig(path_to_save, dpi = dpi, bbox_inches = "tight")
     plt.show()
     
 def choropleth(country, quantiles, folder_to_shapefiles, figsize = (15, 10), annotation = False, cmap = "bwr",
-               annotation_selected = False):
+               annotation_selected = False, path_to_save = None, dpi = 100):
     """
     This module allows to plot the choropleth map providing a the provincial names of the selected country and their corresponding 
     values with which the map will be colored.
@@ -85,5 +87,7 @@ def choropleth(country, quantiles, folder_to_shapefiles, figsize = (15, 10), ann
 
     ax.set_title(country)
     plt.axis("off")
+    if path_to_save is not None:
+        fig.savefig(path_to_save, dpi = dpi, bbox_inches = "tight")
     plt.show()
     

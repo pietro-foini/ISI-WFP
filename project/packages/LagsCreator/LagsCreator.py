@@ -21,7 +21,7 @@ class LagsCreator:
     an highlighting of the cells of the dataframe. 
     
     """
-    def __init__(self, group, lags_dictionary, target):
+    def __init__(self, group, lags_dictionary, target, delay = False):
         """
         Initialization of the 'LagsCreator' class.
         
@@ -35,6 +35,8 @@ class LagsCreator:
            specified lags to keep for each time-serie.
         target: the name of the time-series that you want to predict among all the time-serie. The 'lag value' of the target variable 
            must be always specified. 
+        delay: this option allows to create an extra feature for each time-series corresponding to the delay from the reference
+           date and the first value kept for each tim-series.
            
         """        
         # Check parameters.
@@ -47,7 +49,7 @@ class LagsCreator:
         # Update the 'lags_dictionary' not considering the features with None values.
         lags_dictionary = {k: v for k,v in lags_dictionary.items() if v is not None}
         # Delete unused features to the input dataframe.
-        group = group.drop(columns = features_to_remove) 
+        group = group.drop(columns = features_to_remove).sort_index(axis = 1)
         # Define all the remaining features.
         features = group.columns
         
@@ -78,6 +80,12 @@ class LagsCreator:
                     mask_x[:, i+1][lags] = True          
                 # Create input sample using a mask.
                 x = np.ma.masked_array(x, mask = ~mask_x, fill_value = 0).filled(np.nan)
+                if delay:
+                    delay_x = np.flip(mask_x[:,1:], axis = 0)
+                    delay_x = np.argwhere(delay_x.cumsum(axis = 0).cumsum(axis = 0) == 1)
+                    delay_x = delay_x[delay_x[:,1].argsort()][:, 0]
+                    delay_x = np.expand_dims(np.insert(delay_x.astype(float), 0, np.nan), 0)
+                    x = np.vstack([x, delay_x])
                 return x
 
             # Input samples.
@@ -118,8 +126,13 @@ class LagsCreator:
         for feature in features:
             # Create columns values.
             lags = lags_dictionary[feature]
-            columns_0 = [feature]*len(lags)
-            columns_1 = ["x(t)" if i == 1 else "x(t-%d)" % (i-1) for i in reversed(lags)]
+            if delay:
+                columns_0 = [feature]*(len(lags)+1)
+                columns_1 = ["x(t)" if i == 1 else "x(t-%d)" % (i-1) for i in reversed(lags)]
+                columns_1.append("delay")
+            else:
+                columns_0 = [feature]*len(lags)
+                columns_1 = ["x(t)" if i == 1 else "x(t-%d)" % (i-1) for i in reversed(lags)]
             columns_input_0.extend(columns_0)
             columns_input_1.extend(columns_1)
 
@@ -131,6 +144,7 @@ class LagsCreator:
         self.target = target
         self.features = features
         self.nans = nans
+        self.delay = delay
         self.columns_input_0 = columns_input_0
         self.columns_input_1 = columns_input_1
         
@@ -221,70 +235,69 @@ class LagsCreator:
 
             # Add the temporal information to the input samples.
             if self.feature_time is not None:
-                if self.single_step:
-                    if y is not None:
-                        temporal_features = list()
-                        for feature in self.feature_time:
-                            if feature is "Day":
-                                days = [date.day for date in dates]
-                                temporal_features.append(days)
-                            if feature is "Month":
-                                months = [date.month for date in dates]
-                                temporal_features.append(months)
-                            if feature is "Year":
-                                years = [date.year for date in dates]
-                                temporal_features.append(years)
-                            if feature is "Dayofweek":
-                                dayofweek = [date.dayofweek for date in dates]
-                                temporal_features.append(dayofweek)
-                            if feature is "Week":
-                                week = [date.week for date in dates]
-                                temporal_features.append(week)
-                            if feature is "Quarter":
-                                quarter = [date.quarter for date in dates]
-                                temporal_features.append(quarter)
-                            if feature is "Weekofyear":
-                                weekofyear = [date.weekofyear for date in dates]
-                                temporal_features.append(weekofyear)
-                            if feature is "Dayofyear":
-                                dayofyear = [date.dayofyear for date in dates]
-                                temporal_features.append(dayofyear)
-                        # Create feature time.
-                        dates = np.stack(temporal_features, axis = 1)
-                        # Add to the data.
-                        X = np.concatenate([X, dates], axis = 1)
-                    else:
-                        # Create feature time.
-                        temporal_features = list()
-                        for feature in self.feature_time:
-                            if feature is "Day":
-                                day = (self.group.index[-1] + (self.h)*self.group.index.freq).day
-                                temporal_features.append(day)
-                            if feature is "Month":
-                                month = (self.group.index[-1] + (self.h)*self.group.index.freq).month
-                                temporal_features.append(month)
-                            if feature is "Year":
-                                year = (self.group.index[-1] + (self.h)*self.group.index.freq).year
-                                temporal_features.append(year)
-                            if feature is "Dayofweek":
-                                dayofweek = (self.group.index[-1] + (self.h)*self.group.index.freq).dayofweek
-                                temporal_features.append(dayofweek)
-                            if feature is "Week":
-                                week = (self.group.index[-1] + (self.h)*self.group.index.freq).week
-                                temporal_features.append(week)
-                            if feature is "Quarter":
-                                quarter = (self.group.index[-1] + (self.h)*self.group.index.freq).quarter
-                                temporal_features.append(quarter)
-                            if feature is "Weekofyear":
-                                weekofyear = (self.group.index[-1] + (self.h)*self.group.index.freq).weekofyear
-                                temporal_features.append(weekofyear)
-                            if feature is "Dayofyear":
-                                dayofyear = (self.group.index[-1] + (self.h)*self.group.index.freq).dayofyear
-                                temporal_features.append(dayofyear)
+                if y is not None:
+                    temporal_features = list()
+                    for feature in self.feature_time:
+                        if feature == "Day":
+                            days = [date.day for date in dates]
+                            temporal_features.append(days)
+                        if feature == "Month":
+                            months = [date.month for date in dates]
+                            temporal_features.append(months)
+                        if feature == "Year":
+                            years = [date.year for date in dates]
+                            temporal_features.append(years)
+                        if feature == "Dayofweek":
+                            dayofweek = [date.dayofweek for date in dates]
+                            temporal_features.append(dayofweek)
+                        if feature == "Week":
+                            week = [date.week for date in dates]
+                            temporal_features.append(week)
+                        if feature == "Quarter":
+                            quarter = [date.quarter for date in dates]
+                            temporal_features.append(quarter)
+                        if feature == "Weekofyear":
+                            weekofyear = [date.weekofyear for date in dates]
+                            temporal_features.append(weekofyear)
+                        if feature == "Dayofyear":
+                            dayofyear = [date.dayofyear for date in dates]
+                            temporal_features.append(dayofyear)
+                    # Create feature time.
+                    dates = np.stack(temporal_features, axis = 1)
+                    # Add to the data.
+                    X = np.concatenate([X, dates], axis = 1)
+                else:
+                    # Create feature time.
+                    temporal_features = list()
+                    for feature in self.feature_time:
+                        if feature == "Day":
+                            day = (self.group.index[-1] + (self.h)*self.group.index.freq).day
+                            temporal_features.append(day)
+                        if feature == "Month":
+                            month = (self.group.index[-1] + (self.h)*self.group.index.freq).month
+                            temporal_features.append(month)
+                        if feature == "Year":
+                            year = (self.group.index[-1] + (self.h)*self.group.index.freq).year
+                            temporal_features.append(year)
+                        if feature == "Dayofweek":
+                            dayofweek = (self.group.index[-1] + (self.h)*self.group.index.freq).dayofweek
+                            temporal_features.append(dayofweek)
+                        if feature == "Week":
+                            week = (self.group.index[-1] + (self.h)*self.group.index.freq).week
+                            temporal_features.append(week)
+                        if feature == "Quarter":
+                            quarter = (self.group.index[-1] + (self.h)*self.group.index.freq).quarter
+                            temporal_features.append(quarter)
+                        if feature == "Weekofyear":
+                            weekofyear = (self.group.index[-1] + (self.h)*self.group.index.freq).weekofyear
+                            temporal_features.append(weekofyear)
+                        if feature == "Dayofyear":
+                            dayofyear = (self.group.index[-1] + (self.h)*self.group.index.freq).dayofyear
+                            temporal_features.append(dayofyear)
 
-                        dates = np.expand_dims(temporal_features, 0)
-                        # Add to the data.
-                        X = np.concatenate([X, dates], axis = 1)
+                    dates = np.expand_dims(temporal_features, 0)
+                    # Add to the data.
+                    X = np.concatenate([X, dates], axis = 1)
         else:
             X = None
 
@@ -353,9 +366,14 @@ class LagsCreator:
             y = y[indx]
 
         # Save these samples arrays with temporal information to use for the visualization.    
-        self.X_draw = X
-        self.y_draw = y
-        self.X_test_draw = self.X_test
+        if self.delay:
+            self.X_draw = X[:, :-1, :]
+            self.y_draw = y
+            self.X_test_draw = self.X_test[:, :-1, :]
+        else:
+            self.X_draw = X
+            self.y_draw = y
+            self.X_test_draw = self.X_test
 
         # Define input and output samples training dataframes.
         X, y = self.to_row_output(X, y)
