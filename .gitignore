@@ -1,5 +1,4 @@
 # Don't track content of these folders.
-prove/
 __pycache__/
 
 # Compiled source #
