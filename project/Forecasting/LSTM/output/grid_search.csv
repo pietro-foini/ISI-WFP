@@ -1,3 +1,0 @@
-batch_size,lags,3 Months Anomaly (%) Rainfall,1 Month Anomaly (%) Rainfall,Cereals and tubers,Exchange rate (USD/LCU),FCS,Fatality,NDVI Anomaly,Rainfall (mm),rCSI,Lat,Lon,Population,Ramadan,epoch,val_loss,train_loss
-64,85,85,85,85,85,85,85,85,85,85,85,85,85,85,10,0.010862075723707676,0.01020500948652625
-256,73,73,73,73,73,73,73,73,73,73,73,73,73,73,10,0.024410299956798553,0.029785253976782163
