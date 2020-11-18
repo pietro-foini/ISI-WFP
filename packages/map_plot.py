@@ -43,7 +43,7 @@ def draw_adminstratas(country, adminstratas, folder_to_shapefiles, figsize = (15
             gdf = gdf[gdf.admin.isin(adminstratas)]
         for x, y, label in zip(gdf.centroid.x, gdf.centroid.y, gdf.admin):
             ax.annotate(label, xy = (x, y), xytext = (3, 3), textcoords = "offset points", color = "black")
-    ax.set_title(country)
+    #ax.set_title(country)
     plt.axis("off")
     if path_to_save is not None:
         fig.savefig(path_to_save, dpi = dpi, bbox_inches = "tight")
