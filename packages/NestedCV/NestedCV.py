@@ -55,11 +55,6 @@ class NestedCV:
         # Define the frequency of the group.
         freq = group.index.freq
         features = group.columns
-        
-        # Define granularity of the time-series.
-        granularity_features = group.apply(lambda x: x.loc[x.first_valid_index():x.last_valid_index()].isnull().astype(int).groupby(x.loc[x.first_valid_index():x.last_valid_index()].notnull().astype(int).cumsum()).sum()).max().to_dict()
-        # Define as no daily time-series those with some nan values inside their first and last valid index.
-        no_daily_features = [k for k,v in granularity_features.items() if v != 0]
 
         # Create training, validation and test sets for each split.
         splits_dict = dict()

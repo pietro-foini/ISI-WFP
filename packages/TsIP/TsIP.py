@@ -442,7 +442,7 @@ class TsIP:
 
         This main function allows to interactively plot the predictions statistic of time-series stored into a multi-index 
         columns dataframe with two levels. For each group of the level 0, the time-series into the level 1 must be:
-        ['predicted_mean', 'original', 'lower_quantile', 'upper_quantile'].
+        ['forecast', 'original', 'lower_quantile', 'upper_quantile'].
 
         Parameters
         ----------
@@ -451,7 +451,9 @@ class TsIP:
         yaxis: a string value to add on y axis.
         style: the style of the plots. It can be 'lines' or 'lines+markers'.
         matplotlib: if you want to use matplotlib (True) or plotly (False) library to visualize the time-series.
-        comparison: if you want to compare the time-series of two equal hierarchical dataframes (df and df2).
+        first_last_valid_index_group: if you want to plt the time-series groups using as reference datetime only the values
+           between their first and last valid indeces and not using the entire datetime object of the dataframe.
+        save_path: the path where to save the figures displayed. Ifo 'None' the figures are not saved.
 
        """
         # Define the parameters as attributes of the class.
@@ -474,7 +476,7 @@ class TsIP:
                 group = group.loc[first_idx:last_idx]
 
             if self.matplotlib:
-                fig, ax = plt.subplots(figsize = (15, 7))
+                fig, ax = plt.subplots(figsize = (10, 4))
 
                 # Define the style for matplotlib library.
                 if self.style == "lines+markers":
@@ -483,12 +485,13 @@ class TsIP:
                     style = "-" 
 
                 # Plot entire original serie.
-                group["original"].plot(ax = fig.gca(), color = "#1281FF", label = "Actual", style = style)
+                group["original"].plot(ax = fig.gca(), color = "#0087ff", label = "Actual", style = style)
                 # Plot predicted serie.
-                group["forecast"].plot(ax = fig.gca(), color = "#FF8F17", label = "Forecast", style = style)
+                group["forecast"].plot(ax = fig.gca(), color = "red", label = "Forecast", style = style)
                 # Plot quantiles
                 if self.quantiles:
-                    ax.fill_between(x = group["forecast"].index, y1 = group["lower_quantile"], y2 = group["upper_quantile"], color = "#B6B6B6", alpha = 0.5)
+                    ax.fill_between(x = group["forecast"].index, y1 = group["lower_quantile"], y2 = group["upper_quantile"], 
+                                    color = "red", alpha = 0.5)
                 # Set legend.
                 ax.legend(loc = "best", prop = {"size": 15})
                 # Set axis names.
@@ -496,6 +499,7 @@ class TsIP:
                 ax.set_xlabel("Datetime", fontsize = 15)
                 # Set title.
                 ax.set_title(self.title, fontsize = 15)
+                ax.tick_params(labelsize = 12)
                 #ax.autoscale()
                 
                 if self.save_path is not None:

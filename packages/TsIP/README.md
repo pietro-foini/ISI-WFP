@@ -36,7 +36,11 @@ Returning to visualize the time-series using the plotly library:
 
 <img src="./images/level3.gif" width="800">
 
-The TsIP module has the potential to manage dataframes that can have up to 4 levels on axis 1. Otherwise, it is also possible to compare the time-series that belong to two equal hierarchical dataframes.
+The TsIP module has the potential to manage dataframes that can have up to 4 levels on axis 1. 
+
+Furthermore, it is also possible to compare the time-series that belong to two equal hierarchical dataframes.
 
 <img src="./images/comparison.png" width="800">
+
+The package also contains a further function to plot the predictions results obtained by a time-series forecasting algorithm.
 
