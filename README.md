@@ -9,4 +9,4 @@ The second part of the work will consist of integrating additional data sources 
 
 ## Structure
 
-We have divided the main analyzes of the project into several folders. The *packages* folder contains some custom packages used by other folders of the project. For good navigation within the project, we recommend that you first examine folders *Data Sources* and *Dataset time-series*. In particular, the folder *Dataset time-series* is dependent on the results obtained from the folder *Data Sources*. 
+We have divided the main analyzes of the project into several folders. The *packages* folder contains some custom packages used by other folders of the project. For good navigation within the project, we recommend that you first examine folders *Data Sources* and then *Dataset time-series*. The other folders (except the folder *packages*) are strictly dependent on the results of these two folders. In particular the recommended order for examining the other folders is as follows: *Correlation*, *Symbolic Transfer Entropy* and *Time-series Forecasting*.
