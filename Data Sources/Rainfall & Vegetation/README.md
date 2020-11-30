@@ -7,7 +7,7 @@ For more detail see the following site: https://dataviz.vam.wfp.org/seasonal_exp
 ## Folder structure
 
 - *wfp_data*: this folder contains the rainfall and vegetation raw data provided by WFP;
-- *Rainfall.ipynb*: this jupyter notebook analyzes the rainfall raw data and consequently creates related time-series;
+- *Rainfall.ipynb*: this jupyter notebook analyzes the rainfall raw data and consequently builds related time-series;
 - *Vegetation.ipynb*: this jupyter notebook analyzes the vegetation raw data and consequently creates related time-series;
 - *output_timeseries*: this folder contains all the rainfall and vegetation time-series created by the Rainfall.ipynb and the Vegetation.ipynb notebooks.
 

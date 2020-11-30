@@ -18,5 +18,5 @@ For more details about the data: https://www.acleddata.com/resources/general-gui
 ## Folder structure
 
 - *ACLED_data*: this folder contains the conflicts raw data provided by ACLED;
-- *Conflicts.ipynb*: this jupyter notebook analyzes the conflicts raw data and consequently creates related time-series;
-- *output_timeseries*: this folder contains all the conflicts time-series created by the Conflict.ipynb notebook.
+- *Conflicts.ipynb*: this jupyter notebook analyzes the conflicts raw data and consequently builds related time-series;
+- *output_timeseries*: this folder contains the conflicts time-series created by the Conflict.ipynb notebook.

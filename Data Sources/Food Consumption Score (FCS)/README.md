@@ -31,7 +31,7 @@ It is possible to classify the FCS score into three groups (Food Consumption Gro
 ## Folder structure
 
 - *wfp_data*: this folder contains the FCS raw data provided by WFP;
-- *FCS.ipynb*: this jupyter notebook analyzes the FCS raw data and consequently creates related time-series;
+- *FCS.ipynb*: this jupyter notebook analyzes the FCS raw data and consequently builds related time-series;
 - *output_timeseries*: this folder contains all the FCS time-series created by the FCS.ipynb notebook;
 - *FCS.pdf*: the technical guidance sheet of the FCS provided by WFP;
 - *images*: this folder contains some images to visualize into the README.md file.
