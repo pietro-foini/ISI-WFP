@@ -1,3 +1,3 @@
 # Nested Cross Validation
 
-This function splits a pandas dataframe containing single or multiple time-series into n splits (multiple dataframes) in order to perform a nested cross validation for time-series forecasting purposes.
+This function splits a pandas dataframe containing single or multiple time-series into n splits (multiple dataframes) in order to perform a nested cross validation for time-series forecasting purposes. More specifically, the splits is based on the end of the months up to the number of days you want to predict. Consequently, the number of splits corresponds to the number of months you want to split out.

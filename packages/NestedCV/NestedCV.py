@@ -54,7 +54,6 @@ class NestedCV:
         """
         # Define the frequency of the group.
         freq = group.index.freq
-        features = group.columns
 
         # Create training, validation and test sets for each split.
         splits_dict = dict()
