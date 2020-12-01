@@ -31,7 +31,7 @@ In the case of Nigeria country, we evaluate the goodness of the forecasting over
 </p>
  
  
-The forecasting procedure begins with converting our time-series data into pairs of input features ($X$) and output targets ($y$). The decision algorithm learns from this data to identify food insecurity behavior over time. In the process, the training is enhanced through different strategies, like hyper-parameter tuning. For this reason, we also apply a model selection procedure that makes use of an additional part of training data for validation (10 % of training data for validation).
+The forecasting procedure begins with converting our time-series data into pairs of input features (X) and output targets (y). The decision algorithm learns from this data to identify food insecurity behavior over time. In the process, the training is enhanced through different strategies, like hyper-parameter tuning. For this reason, we also apply a model selection procedure that makes use of an additional part of training data for validation (10 % of training data for validation).
 
 <p align="center">
 <img src="./images_readme/evaluation_scheme.png" width="700">

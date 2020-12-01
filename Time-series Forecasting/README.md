@@ -1,6 +1,6 @@
 # Time-series Forecasting
 
-In time-series analysis, one of the main objectives is the prediction of future values using historical observations. Given the evolution of a phenomenon $X = \{x_1, x_2, ..., x_t\}$, that means predicting some steps (e.g. $x_{t+1}$, $x_{t+2}$, ..., $x_{t+H}$) in the future. 
+In time-series analysis, one of the main objectives is the prediction of future values using historical observations. Given the evolution of a phenomenon <img src="https://render.githubusercontent.com/render/math?math=3 X = \{x_1, x_2, ..., x_t\}">, that means predicting some steps (e.g. <img src="https://render.githubusercontent.com/render/math?math=3 x_{t+1}, x_{t+2}, ..., x_{t+H}">) in the future. 
 
 The simplest forecasting algorithms use the past values of the variable $X$ as only predictors. However, many real phenomena can strictly depend on more factors. In this case, the historical observations of auxiliary events can improve the forecasting. These two strategies are called *univariate forecasting* and *multivariate forecasting* respectively. 
 
@@ -10,6 +10,6 @@ We focus our attention on **eXtreme Gradient Boosting (XGBoost)** algorithm that
 
 XGBoost algorithm deals with supervised machine learning tasks, like classification and regression. In this regard, the time-series forecast process must be adapted to the regression setup. Since the concerned configuration does not support a multi-output design, we employ 30 different regression models in order to cover all our prediction horizons.
 
-The forecasting procedure begins with converting our time-series data into pairs of input features ($X$) and output targets ($y$). The decision algorithm learns from this data to identify food insecurity behavior over time. In the process, the training is enhanced through different strategies, like hyper-parameter tuning. 
+The forecasting procedure begins with converting our time-series data into pairs of input features (X) and output targets (y). The decision algorithm learns from this data to identify food insecurity behavior over time. In the process, the training is enhanced through different strategies, like hyper-parameter tuning. 
 
 The effectiveness of the forecasting algorithm is based on the results of the prediction in the administrative regions. In particular, we build an intuitive evaluation method that concretely provides the limits and the strong points of the predictive algorithm in a real context. This decision stems from the will to enable WFP to analyze the advantage of using our solution for planning humanitarian interventions.
