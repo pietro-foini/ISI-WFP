@@ -49,10 +49,14 @@ In order to create the input features for our models, we need to provide a set o
 <img src="../../Symbolic Transfer Entropy/output_images/Ranking_Nigeria.png" width="800">
 </p>
 
-2) The history length for each indicator is determined as the minimum positive integer above which the change rate of the TE from X to Y decreases significantly according to the following figure. 
+2) The history length for each indicator is determined as the minimum positive integer above which the change rate of the TE from X to Y decreases significantly, while the history length of the target indicator is investigated through the entropy rate. 
 
 <p align="center">
 <img src="../../Symbolic Transfer Entropy/output_images/Lags_Nigeria.png" width="800">
+</p>
+
+<p align="center">
+<img src="../../Symbolic Transfer Entropy/output_images/entropy_rate_Nigeria.png" width="800">
 </p>
 
 ## Folders structure
