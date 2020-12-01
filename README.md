@@ -11,6 +11,6 @@ Next, we focus on obtaining 30-days predictions for the food insecurity time-ser
 
 <p align="center">Hunger Map (live: https://hungermap.wfp.org/)</p>
 
-## Structure
+## Folders structure
 
 We have divided the main analyzes of the project into several folders. The *packages* folder contains some custom python packages used by other folders of the project. For good navigation within the project, we recommend that you first examine folders *Data Sources* and then *Dataset time-series*. The other folders (except the folder *packages*) are strictly dependent on the results of these two folders. In particular the recommended order for examining the remaining analyzes is as follows: *Correlation*, *Symbolic Transfer Entropy* and *Time-series Forecasting*.
