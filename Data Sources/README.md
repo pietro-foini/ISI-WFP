@@ -4,7 +4,7 @@ In order to investigate the food security phenomenon, we must begin by going thr
 
 ## Folder structure
 
-- *Adminstrata Code*: this folder contains the files for the creation of the static time-series about the administrative codes;
+- *Adminstrata Code*: this folder contains the files for the creation of the static time-series about the administrative region codes;
 - *Conflicts*: this folder contains the files for the creation of the time-series about the fatalities at administrative level;
 - *Coordinates*: this folder contains the files for the creation of the static time-series about the latitude and longitude at administrative level;
 - *Food Consumption Score (FCS)*: this folder contains the files for the creation of the time-series about Food Consumption Score at administrative level;
