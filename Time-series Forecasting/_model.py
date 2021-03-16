@@ -1,10 +1,8 @@
 import numpy as np
 import pandas as pd
-from _utils import *
 import itertools
 import xgboost as xgb
-
-from sklearn.metrics import mean_squared_error as r2_score
+from _utils import *
 
 def model(train, test, lags_dict, out, target, split_number, hyper = None, format = None, dir_data = None, n_jobs = 1):
     """
