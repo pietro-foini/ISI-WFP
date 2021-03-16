@@ -21,7 +21,7 @@ class LagsCreator:
     an highlighting of the cells of the dataframe. 
     
     """
-    def __init__(self, group, lags_dictionary, target, delay = False):
+    def __init__(self, group, lags_dictionary, target):
         """
         Initialization of the 'LagsCreator' class.
         
@@ -35,8 +35,6 @@ class LagsCreator:
            specified lags to keep for each time-serie.
         target: the name of the time-series that you want to predict among all the time-serie. The 'lag value' of the target variable 
            must be always specified. 
-        delay: this option allows to create an extra feature for each time-series corresponding to the delay from the reference
-           date and the first value kept for each tim-series.
            
         """        
         # Check parameters.
@@ -80,12 +78,6 @@ class LagsCreator:
                     mask_x[:, i+1][lags] = True          
                 # Create input sample using a mask.
                 x = np.ma.masked_array(x, mask = ~mask_x, fill_value = 0).filled(np.nan)
-                if delay:
-                    delay_x = np.flip(mask_x[:,1:], axis = 0)
-                    delay_x = np.argwhere(delay_x.cumsum(axis = 0).cumsum(axis = 0) == 1)
-                    delay_x = delay_x[delay_x[:,1].argsort()][:, 0]
-                    delay_x = np.expand_dims(np.insert(delay_x.astype(float), 0, np.nan), 0)
-                    x = np.vstack([x, delay_x])
                 return x
 
             # Input samples.
@@ -126,13 +118,8 @@ class LagsCreator:
         for feature in features:
             # Create columns values.
             lags = lags_dictionary[feature]
-            if delay:
-                columns_0 = [feature]*(len(lags)+1)
-                columns_1 = ["x(t)" if i == 1 else "x(t-%d)" % (i-1) for i in reversed(lags)]
-                columns_1.append("delay")
-            else:
-                columns_0 = [feature]*len(lags)
-                columns_1 = ["x(t)" if i == 1 else "x(t-%d)" % (i-1) for i in reversed(lags)]
+            columns_0 = [feature]*len(lags)
+            columns_1 = ["x(t)" if i == 1 else "x(t-%d)" % (i-1) for i in reversed(lags)]
             columns_input_0.extend(columns_0)
             columns_input_1.extend(columns_1)
 
@@ -144,7 +131,6 @@ class LagsCreator:
         self.target = target
         self.features = features
         self.nans = nans
-        self.delay = delay
         self.columns_input_0 = columns_input_0
         self.columns_input_1 = columns_input_1
         
@@ -366,14 +352,9 @@ class LagsCreator:
             y = y[indx]
 
         # Save these samples arrays with temporal information to use for the visualization.    
-        if self.delay:
-            self.X_draw = X[:, :-1, :]
-            self.y_draw = y
-            self.X_test_draw = self.X_test[:, :-1, :]
-        else:
-            self.X_draw = X
-            self.y_draw = y
-            self.X_test_draw = self.X_test
+        self.X_draw = X
+        self.y_draw = y
+        self.X_test_draw = self.X_test
 
         # Define input and output samples training dataframes.
         X, y = self.to_row_output(X, y)

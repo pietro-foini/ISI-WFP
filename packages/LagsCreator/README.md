@@ -12,9 +12,9 @@ The main ingredient to be supplied to the initialization function of the LagsCre
 
 The first step is the initialization of the Lags-Creator class:
 
-    creator = LagsCreator(df, lags_dictionary = lags_dict, target = "B", delay = False)
+    creator = LagsCreator(df, lags_dictionary = lags_dict, target = "B")
 
-We can forecast multiple steps (e.g. 4 steps in the future) into a single-shot through a *direct approach* (in practice, we set `single_step = False` during the initialization of the `to_supervised` method of the Lags-Creator class). Now, we can create lag-features for each time-series present in the dataframe. The delay parameter simply allows to create an extra feature for each time-series corresponding to the delay from the reference date and the first value kept for each tim-series.
+We can forecast multiple steps (e.g. 4 steps in the future) into a single-shot through a *direct approach* (in practice, we set `single_step = False` during the initialization of the `to_supervised` method of the Lags-Creator class). Now, we can create lag-features for each time-series present in the dataframe. 
 
     X_train, y_train, X_test, columns_input = creator.to_supervised(h = 4, single_step = False)
 

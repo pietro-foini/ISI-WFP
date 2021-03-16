@@ -1,6 +1,6 @@
 # Don't track content of these folders.
 __pycache__/
-data_xgboost/
+dataset/
 
 # Compiled source #
 ###################

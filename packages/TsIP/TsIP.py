@@ -326,7 +326,7 @@ class TsIP:
             pass
                 
     def interactive_plot_df(self, title = None, yaxis = None, style = "lines", first_last_valid_index_group = False, 
-                            matplotlib = False, comparison = False):
+                            matplotlib = False, comparison = False, normalization = False):
         """
         ***Main function***
         
@@ -351,6 +351,9 @@ class TsIP:
         self.first_last_valid_index_group = first_last_valid_index_group
         self.matplotlib = matplotlib 
         self.comparison = comparison 
+        
+        if normalization:
+            self.df = self.df.apply(lambda x: x/x.max())
 
         ### CHECK MULTI-INDEX COLUMNS ###
         

@@ -14,7 +14,8 @@ def calc_ste(X, Y, m = 3, h = 1, kx = 1, ky = 1):
     
     This code allows to compute the symbolic transfer entropy between two time-series X and Y given an embedding dimension m. 
     The first step of the algorithm works in order to convert the two time-series into corresponding symbolized representation.
-    Let's suppose that X = {x(1), x(2), ..., x(N)} and Y = {y(1), y(2), ..., y(N)} are already the symbolized time-series 
+    
+    Let's suppose that X = {x(1), x(2), ..., x(N)} and Y = {y(1), y(2), ..., y(N)} are the symbolized time-series 
     obtained from the original ones. Using these symbolized time-series, the standard formula of the transfer entropy to measure 
     the information flow from X to Y is the following:
     
@@ -48,8 +49,7 @@ def calc_ste(X, Y, m = 3, h = 1, kx = 1, ky = 1):
     T_XY: the symbolic transfer entropy T_XY to measure the information flow from X to Y.
     
     References
-    ----------
-    
+    ----------   
     [1]. "Symbolic transfer entropy", M. Staniek, K. Lehnertz.
     [2]. "The dynamics of information-driven coordination phenomena: A transfer entropy analysis", Javier Borge-Holthoefer, 
           Nicola Perra, Bruno Gonçalves, Sandra González-Bailón, Alex Arenas, Yamir Moreno, Alessandro Vespignani.
@@ -67,28 +67,23 @@ def calc_ste(X, Y, m = 3, h = 1, kx = 1, ky = 1):
     Y = np.argsort(rolling_window(Y, m).T) + 1
     Y = np.array([dict_pattern_index[tuple(y)] for y in Y])
 
-    # Define the length of the two time-series.
-    N = X.shape[0]
+    Xk = rolling_window(np.expand_dims(X, axis = 1), kx).squeeze(axis = -1)
+    Yk = rolling_window(np.expand_dims(Y, axis = 1), ky).squeeze(axis = -1)
+    Yh = np.expand_dims(Y, axis = 1)
 
-    # Let's define the future horizon to take into consideration.
-    Y_h = np.expand_dims(np.roll(Y, shift = -h, axis = 0), axis = 1)
-
-    # Create histories length of the two time-series.
-    Xk = np.stack([np.roll(X, shift = i, axis = 0) for i in range(kx)], axis = 1)
-    Yk = np.stack([np.roll(Y, shift = i, axis = 0) for i in range(ky)], axis = 1)
-
-    # Define all the unique combinations/states of these two time-series.
-    states = np.unique(np.concatenate([Xk, Yk, Y_h], axis = 1)[max(kx,ky)-1:-h], axis = 0)
-    
     # Define the concatenations of all these time-series lags.
-    concatenation = np.concatenate([Xk, Yk, Y_h], axis = 1)
+    concatenation = np.concatenate([Xk[max(kx,ky)-kx:-h], Yk[max(kx,ky)-ky:-h], Yh[max(kx,ky)+h-1:]], axis = 1)
+    # Define all the unique combinations/states of these two time-series.
+    states = np.unique(concatenation, axis = 0)
+
+    concatenation_y = np.concatenate([Yk[:-h], Yh[ky+h-1:]], axis = 1)
 
     T_XY = 0
     for state in states:
-        prob1 = (concatenation == state).all(axis = 1).astype(int)[max(kx,ky)-1:N-h].sum()/(N-(h+max(kx,ky)-1))
-        prob2 = (concatenation[:,kx:kx+ky] == state[kx:kx+ky]).all(axis = 1).astype(int)[ky-1:N-h].sum()/(N-(h+ky-1))
-        prob3 = (concatenation[:,:-1] == state[:-1]).all(axis = 1).astype(int)[max(kx,ky)-1:N-h].sum()/(N-(h+max(kx,ky)-1))
-        prob4 = (concatenation[:,kx:] == state[kx:]).all(axis = 1).astype(int)[ky-1:N-h].sum()/(N-(h+ky-1))
+        prob1 = (concatenation == state).all(axis = 1).sum()/(len(concatenation))
+        prob2 = (concatenation_y[:,:-1] == state[kx:-1]).all(axis = 1).sum()/(len(concatenation_y))
+        prob3 = (concatenation[:,:-1] == state[:-1]).all(axis = 1).sum()/(len(concatenation))
+        prob4 = (concatenation_y == state[kx:]).all(axis = 1).sum()/(len(concatenation_y))
 
         prob = prob1 * np.log2((prob1 * prob2)/(prob3 * prob4))
 
@@ -130,28 +125,23 @@ def calc_te(X, Y, h = 1, kx = 1, ky = 1):
     T_XY: the transfer entropy T_XY to measure the information flow from X to Y.
 
     """
-    # Define the length of the two time-series.
-    N = X.shape[0]
+    Xk = rolling_window(np.expand_dims(X, axis = 1), kx).squeeze(axis = -1)
+    Yk = rolling_window(np.expand_dims(Y, axis = 1), ky).squeeze(axis = -1)
+    Yh = np.expand_dims(Y, axis = 1)
 
-    # Let's define the future horizon to take into consideration.
-    Y_h = np.expand_dims(np.roll(Y, shift = -h, axis = 0), axis = 1)
-
-    # Create histories length of the two time-series.
-    Xk = np.stack([np.roll(X, shift = i, axis = 0) for i in range(kx)], axis = 1)
-    Yk = np.stack([np.roll(Y, shift = i, axis = 0) for i in range(ky)], axis = 1)
-
-    # Define all the unique combinations/states of these two time-series.
-    states = np.unique(np.concatenate([Xk, Yk, Y_h], axis = 1)[max(kx,ky)-1:-h], axis = 0)
-    
     # Define the concatenations of all these time-series lags.
-    concatenation = np.concatenate([Xk, Yk, Y_h], axis = 1)
+    concatenation = np.concatenate([Xk[max(kx,ky)-kx:-h], Yk[max(kx,ky)-ky:-h], Yh[max(kx,ky)+h-1:]], axis = 1)
+    # Define all the unique combinations/states of these two time-series.
+    states = np.unique(concatenation, axis = 0)
+
+    concatenation_y = np.concatenate([Yk[:-h], Yh[ky+h-1:]], axis = 1)
 
     T_XY = 0
     for state in states:
-        prob1 = (concatenation == state).all(axis = 1).astype(int)[max(kx,ky)-1:N-h].sum()/(N-(h+max(kx,ky)-1))
-        prob2 = (concatenation[:,kx:kx+ky] == state[kx:kx+ky]).all(axis = 1).astype(int)[ky-1:N-h].sum()/(N-(h+ky-1))
-        prob3 = (concatenation[:,:-1] == state[:-1]).all(axis = 1).astype(int)[max(kx,ky)-1:N-h].sum()/(N-(h+max(kx,ky)-1))
-        prob4 = (concatenation[:,kx:] == state[kx:]).all(axis = 1).astype(int)[ky-1:N-h].sum()/(N-(h+ky-1))
+        prob1 = (concatenation == state).all(axis = 1).sum()/(len(concatenation))
+        prob2 = (concatenation_y[:,:-1] == state[kx:-1]).all(axis = 1).sum()/(len(concatenation_y))
+        prob3 = (concatenation[:,:-1] == state[:-1]).all(axis = 1).sum()/(len(concatenation))
+        prob4 = (concatenation_y == state[kx:]).all(axis = 1).sum()/(len(concatenation_y))
 
         prob = prob1 * np.log2((prob1 * prob2)/(prob3 * prob4))
 
@@ -262,74 +252,6 @@ def entropy_rate_discrete(X, h = 1, k = 1):
 
     return -H
 
-def calc_entropy_rates_for_te(X, Y, m = 3, h = 1, kx = 1, ky = 1):
-    """
-    In order to compute the transfer entropy from X to Y, it is possible to use the conditional Shannon entropies. Let's
-    suppose for example to compute T_XY:
-    
-    T_XY = H(y(i+h)|y(i), ..., y(i-ky-1)) - H(y(i+h)|y(i), ..., y(i-ky-1), x(i), ..., x(i-kx-1)) = H1 - H2
-    
-    This function will be return the two conditional entropies H1 and H2. 
-    
-    N.B. The factor H1 can also be used as a normalization factor for the transfer entropy T_XY.
-    
-    """
-    
-    # Compute the symbolization of the two time-series rolling a window of dimension m.
-    patterns = list(permutations(np.arange(m) + 1))
-    # Get the list of integer numbers associated to the permutation.
-    dict_pattern_index = {patterns[i]: i for i in range(len(patterns))}
-    
-    # Pattern time-series X.
-    X = np.argsort(rolling_window(X, m).T) + 1
-    X = np.array([dict_pattern_index[tuple(x)] for x in X])
-    # Pattern time-series Y.
-    Y = np.argsort(rolling_window(Y, m).T) + 1
-    Y = np.array([dict_pattern_index[tuple(y)] for y in Y])
-    
-    # Define the length of the two time-series.
-    N = X.shape[0]
-
-    # Let's define the future horizon to take into consideration.
-    Y_h = np.expand_dims(np.roll(Y, shift = -h, axis = 0), axis = 1)
-
-    # Create histories length of the two time-series.
-    Xk = np.stack([np.roll(X, shift = i, axis = 0) for i in range(kx)], axis = 1)
-    Yk = np.stack([np.roll(Y, shift = i, axis = 0) for i in range(ky)], axis = 1)
-
-    # Define all the unique combinations/states of these two time-series.
-    states = np.unique(np.concatenate([Xk, Yk, Y_h], axis = 1)[max(kx,ky)-1:-h], axis = 0)
-    
-    # Define the concatenations of all these time-series lags.
-    concatenation = np.concatenate([Xk, Yk, Y_h], axis = 1)
-
-    H1 = 0
-    H2 = 0
-    for state in states:
-        # Compute H1 conditional entropy.
-        prob1 = (concatenation == state).all(axis = 1).astype(int)[max(kx,ky)-1:N-h].sum()/(N-(h+max(kx,ky)-1))
-        prob2 = (concatenation[:,kx:] == state[kx:]).all(axis = 1).astype(int)[ky-1:N-h].sum()/(N-(h+ky-1))
-        prob3 = (concatenation[:,kx:-1] == state[kx:-1]).all(axis = 1).astype(int)[ky-1:N-h].sum()/(N-(h+ky-1))
-
-        prob = (prob1) * np.log2(prob2/prob3)
-
-        if prob != np.nan:
-            H1 += prob 
-            
-        # Compute H2 conditional entropy.
-        prob1 = (concatenation == state).all(axis = 1).astype(int)[max(kx,ky)-1:N-h].sum()/(N-(h+max(kx,ky)-1))
-        prob2 = (concatenation[:,:-1] == state[:-1]).all(axis = 1).astype(int)[max(kx,ky)-1:N-h].sum()/(N-(h+max(kx,ky)-1))
-
-        prob = (prob1) * np.log2(prob1/prob2)
-
-        if prob != np.nan:
-            H2 += prob 
-
-    H1 = -H1
-    H2 = -H2
-            
-    return H1, H2
-
 def compute_T(df, m = 3, h = 1, kx = 1, ky = 1):   
     """
     Compute the correlation matrix using symbolic transfer entropy as metric.
@@ -339,6 +261,22 @@ def compute_T(df, m = 3, h = 1, kx = 1, ky = 1):
     T = corr_pairwise(df, lambda x, y: calc_ste(x.values, y.values, m = m, h = h, kx = kx, ky = ky))
     
     return T
+
+def to_symbolization(X, m = 3):
+    """
+    Convert scalar time-series into a symbolic representation using an embedding dimension m.
+    
+    """
+    # Compute the symbolization of the two time-series rolling a window of dimension m.
+    patterns = list(permutations(np.arange(m) + 1))
+    # Get the list of integer numbers associated to the permutation.
+    dict_pattern_index = {patterns[i]: i for i in range(len(patterns))}
+    
+    # Pattern time-series X.
+    X = np.argsort(rolling_window(X, m).T) + 1
+    X = np.array([dict_pattern_index[tuple(x)] for x in X])
+    
+    return X
 
 def rolling_window(x, window):
     """

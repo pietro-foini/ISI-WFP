@@ -14,17 +14,17 @@ plt.style.use("default")
 #
 # Year: 2020
     
-def draw_adminstratas(country, adminstratas, adminstratas_to_highlight, folder_to_shapefiles, figsize = (10, 7), annotation = False, 
-                      annotation_selected = False, path_to_save = None, dpi = 100):
+def draw_adminstratas(country, adminstratas, adminstratas_to_highlight, folder_to_shapefiles, figsize = (10, 7), 
+                      annotation = False, annotation_selected = False, path_to_save = None, dpi = 100):
     """
-    This module allows to plot the political boundaries of the selected country using shapefiles. More precisely, it allows to view the
-    provinces (adminstratas) provided by the users.
+    This module allows to plot the political boundaries of the selected country highlighting the administrative regions 
+    provided by the users.
     
     Parameters
     ----------
     country: a string parameter corresponding to the name of the country.
     adminstratas: a list of the administrative region names that will be colored when viewing the map using an alpha
-       transparency of 0.5.
+       transparency of 0.5. If some regions are missing, they will be highlighted with a specific pattern.
     adminstratas_to_highlight: a sublist of the administrative region names (they must be contained in the 'adminstratas' parameter)
        that will be colored when viewing the map using an alpha transparency of 1.0.
     folder_to_shapefiles: the path to reach the folder where the shapefiles of the country are stored.
@@ -37,19 +37,19 @@ def draw_adminstratas(country, adminstratas, adminstratas_to_highlight, folder_t
     
     """
     # Check parameters.
-    if not set(adminstratas_to_highlight) <= set(adminstratas):
-        raise ValueError("The parameter 'adminstratas_to_highlight' must be a sublist of the parameter 'adminstratas'.")
+    if not set(adminstratas_to_highlight).issubset(set(adminstratas)):
+        raise ValueError("The parameter 'adminstratas_to_highlight' must be a subset of the parameter 'adminstratas'.")
     
     # Define cmap.
     cmap = LinearSegmentedColormap.from_list("cmap", ["#83b9ed", "#b3e9ff"], N = 2)
     
     # Load the dataframe of the country.
-    gdf = gpd.read_file(folder_to_shapefiles + "/" + country + ".shp")
+    gdf = gpd.read_file(folder_to_shapefiles)
 
     # Draw only the adminstratas defined by the user.
     def assign_color(x):
-        if x.admin in adminstratas:
-            if x.admin in adminstratas_to_highlight:
+        if x["region"] in adminstratas:
+            if x["region"] in adminstratas_to_highlight:
                 return 1
             else:
                 return 0
@@ -64,8 +64,8 @@ def draw_adminstratas(country, adminstratas, adminstratas_to_highlight, folder_t
              missing_kwds = {"color": "#b7ada7", "edgecolor": "grey", "hatch": "///", "label": "Missing values"})
     if annotation:
         if annotation_selected:
-            gdf = gdf[gdf.admin.isin(adminstratas)]
-        for x, y, label in zip(gdf.centroid.x, gdf.centroid.y, gdf.admin):
+            gdf = gdf[gdf["region"].isin(adminstratas)]
+        for x, y, label in zip(gdf.centroid.x, gdf.centroid.y, gdf["region"]):
             ax.text(x, y, label, ha = "center", size = 10, path_effects = [pe.withStroke(linewidth = 2, foreground = "w")])
     plt.axis("off")
     plt.show()
@@ -81,7 +81,7 @@ def choropleth(country, quantiles, folder_to_shapefiles, figsize = (15, 10), ann
     
     Parameters
     ----------
-    country: a string parameter corresponding to the name of the country; e.g. "Yemen".
+    country: a string parameter corresponding to the name of the country.
     quantiles: a pandas serie object with as index the provincial names and as values the corresponding values.
     folder_to_shapefiles: the path to reach the folder where the shapefiles are stored.
     figsize: the size of the figure.
@@ -93,13 +93,13 @@ def choropleth(country, quantiles, folder_to_shapefiles, figsize = (15, 10), ann
     
     """
     # Load the dataframe of the country.
-    gdf = gpd.read_file(folder_to_shapefiles + "/" + country + ".shp")
+    gdf = gpd.read_file(folder_to_shapefiles)
     
     # Define the provided adminstratas.
     adminstratas = quantiles.index
     
     # Draw only the adminstratas defined by the user.
-    gdf["draw"] = gdf.apply(lambda x: quantiles.loc[x.admin] if x.admin in adminstratas else np.nan, axis = 1)
+    gdf["draw"] = gdf.apply(lambda x: quantiles.loc[x["region"]] if x["region"] in adminstratas else np.nan, axis = 1)
     # Create figure.
     f, ax = plt.subplots(figsize = figsize)
     ax = gdf.plot(column = "draw", ax = ax, cmap = cmap, edgecolor = "black", legend = True, alpha = 1, scheme = "quantiles", 
@@ -107,8 +107,8 @@ def choropleth(country, quantiles, folder_to_shapefiles, figsize = (15, 10), ann
                   legend_kwds = dict(loc = "upper left", bbox_to_anchor = (1, 1)))
     if annotation:
         if annotation_selected:
-            gdf = gdf[gdf.admin.isin(adminstratas)]
-        for x, y, label in zip(gdf.centroid.x, gdf.centroid.y, gdf.admin):
+            gdf = gdf[gdf["region"].isin(adminstratas)]
+        for x, y, label in zip(gdf.centroid.x, gdf.centroid.y, gdf["region"]):
             ax.text(x, y, label, ha = "center", size = 10, path_effects = [pe.withStroke(linewidth = 2, foreground = "w")])
 
     ax.set_title(country)
