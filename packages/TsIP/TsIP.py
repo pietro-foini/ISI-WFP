@@ -432,6 +432,12 @@ class TsIP:
                         w2.options = self.df[w1.value].columns.get_level_values(0).unique()
                         w3.options = self.df[w1.value][w2.value].columns.get_level_values(0).unique()
                 w1.observe(update)
+                
+                def update2(*args):
+                    if w2.value:
+                        w3.options = self.df[w1.value][w2.value].columns.get_level_values(0).unique()
+                
+                w2.observe(update2)
 
                 w4 = widgets.RadioButtons(options = ["Time-series", "Missing values"], description = "Select:", disabled = False)
                 hbox = widgets.HBox([w1, w2, w3])
