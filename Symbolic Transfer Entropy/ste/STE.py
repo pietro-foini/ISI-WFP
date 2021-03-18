@@ -262,7 +262,7 @@ def compute_T(df, m = 3, h = 1, kx = 1, ky = 1):
     
     return T
 
-def to_symbolization(X, m = 3):
+def to_symbolization(X, m = 3, pattern = False):
     """
     Convert scalar time-series into a symbolic representation using an embedding dimension m.
     
@@ -274,7 +274,8 @@ def to_symbolization(X, m = 3):
     
     # Pattern time-series X.
     X = np.argsort(rolling_window(X, m).T) + 1
-    X = np.array([dict_pattern_index[tuple(x)] for x in X])
+    if not pattern:
+        X = np.array([dict_pattern_index[tuple(x)] for x in X])
     
     return X
 
