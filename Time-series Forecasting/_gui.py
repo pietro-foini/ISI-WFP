@@ -30,12 +30,12 @@ class gui:
         chkbtn = tk.Checkbutton(root, text = text, variable = variable)
         chkbtn.grid(row = rowno, column = colno)
         if disable:
-            chkbtn.configure(state = "disabled")
+            chkbtn.configure(state = tk.DISABLED)
     
     # Define widget.
     def Listbox(self, root, name, variableValues, rowno, colno, defaultValues):
         # Set label listbox.
-        self.Label(root, name, rowno, colno, size = 7, wraplength = 100)
+        self.Label(root, name, rowno, colno, size = 10, wraplength = 100)
         # Set listbox.
         lstbox = tk.Listbox(root, listvariable = variableValues, selectmode = tk.MULTIPLE, exportselection = 0)
         lstbox.grid(row = rowno+1, column = colno, columnspan = 1)
@@ -96,7 +96,7 @@ class gui:
         runbutton.grid(row = 2, column = 0)
         # Set label information.
         information = self.Label(self.root, text = "You can also provide python expressions (e.g. np.arange(1,15))", 
-                                 rowno = 3, colno = 0, size = 7)
+                                 rowno = 3, colno = 0, size = 10)
         
         self.root.mainloop()  
         
@@ -127,7 +127,7 @@ class gui:
         btn.grid(row = 2, column = 0)
         # Set label.
         lb = self.Label(self.frame, text = "N.B. If no time lag is selected, the corresponding indicator will not be taken into account as a predictor in the following analysis.", 
-                        rowno = 3, colno = 0, size = 7)
+                        rowno = 3, colno = 0, size = 10)
 
         # Scroll horizontal.
         xscroll = tk.Scrollbar(self.frame, orient = tk.HORIZONTAL)
@@ -151,13 +151,46 @@ class gui:
         # Set checkbuttons.
         Variable = {v: tk.BooleanVar(value = False) for v in features}
         for i,v in enumerate(features):
-            self.Checkbutton(self.canvasFrame, v, Variable[v], rowno = i+2, colno = 0)
+            if v == target:
+                self.Checkbutton(self.canvasFrame, v, Variable[v], rowno = i+2, colno = 0, disable = True)
+            else:
+                self.Checkbutton(self.canvasFrame, v, Variable[v], rowno = i+2, colno = 0)
         # Set button.
         btn = tk.Button(self.frame, text = "Run", command = lambda: self.run3(Variable))
         btn.grid(row = 3, column = 0)
         # Set label.
         lb = self.Label(self.frame, text = "N.B. If the feature is selected, it is applied a feature selection on that variable.", 
-                        rowno = 4, colno = 0, size = 7, wraplength = 300)
+                        rowno = 4, colno = 0, size = 10, wraplength = 300)
+
+        # Scroll vertical.
+        yscroll = tk.Scrollbar(self.frame, orient = tk.VERTICAL)
+        yscroll.config(command = self.canvas.yview)
+        self.canvas.config(yscrollcommand = yscroll.set)
+        yscroll.grid(row = 1, column = 1, sticky = "ns")
+        self.canvasFrame.bind("<Configure>", lambda x: self.update_scrollregion(x, self.canvas))
+
+        self.root.mainloop()
+        
+        return self.output
+    
+    def GUI4(self, features, target):
+        # Set label.
+        lb = self.Label(self.frame, text = "Select the indicators to consider:", 
+                        rowno = 0, colno = 0, size = 12, wraplength = 300)
+        self.canvas.config(width = 200, height = 250)
+        self.canvas.grid(row = 1, column = 0)
+        self.canvasFrame = tk.Frame(self.canvas)
+        self.canvas.create_window(0, 0, window = self.canvasFrame, anchor = "nw")
+        # Set checkbuttons.
+        Variable = {v: tk.BooleanVar(value = True) for v in features}
+        for i,v in enumerate(features):
+            if v == target:
+                self.Checkbutton(self.canvasFrame, v, Variable[v], rowno = i+2, colno = 0, disable = True)
+            else:
+                self.Checkbutton(self.canvasFrame, v, Variable[v], rowno = i+2, colno = 0)
+        # Set button.
+        btn = tk.Button(self.frame, text = "Run", command = lambda: self.run3(Variable))
+        btn.grid(row = 3, column = 0)
 
         # Scroll vertical.
         yscroll = tk.Scrollbar(self.frame, orient = tk.VERTICAL)

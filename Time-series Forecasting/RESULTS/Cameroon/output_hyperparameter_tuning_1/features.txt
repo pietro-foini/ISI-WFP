@@ -1,0 +1,12 @@
+FCG
+Population
+Code
+Fatalities
+NDVI Anomaly
+Rainfalls (mm)
+rCSI
+1 Month Anomaly Rainfalls (%)
+Ramadan
+Day
+Month
+Year

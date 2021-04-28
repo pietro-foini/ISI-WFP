@@ -12,9 +12,11 @@ import glob
 import ntpath
 import click
 import sys
-from _gui import gui
+from _gui import *
 from _utils import *
 from _default import *
+
+rstate = np.random.RandomState(123)
 
 ###############################
 ### USER-DEFINED PARAMETERS ###
@@ -22,20 +24,23 @@ from _default import *
 
 parser_user = argparse.ArgumentParser(description = "This file allows to perform the hyperpameter tuning (and feature selection) over the validation sets of the corresponding splits using a bayesian approach.", formatter_class = argparse.ArgumentDefaultsHelpFormatter)
 
-parser_user.add_argument('folder_path_to_dataset', type = str, help = "The path to the folder containing the dataset (training and test points).")
-parser_user.add_argument('--folder_path_to_workspace', type = str, default = "./output", help = "The path to the folder where all the results arising from the current hyperparameter tuning will be stored.")
+parser_user.add_argument('--folder_path_to_dataset', type = str, default = "./dataset", help = "The path to the folder containing the dataset (training and test points).")
+parser_user.add_argument('--folder_path_to_workspace', type = str, default = "./output_hyperparameter_tuning", help = "The path to the folder where all the results arising from the current hyperparameter tuning will be stored.")
 parser_user.add_argument('--splits_to_consider', type = int, default = [1,2,3,4,5,6,7,8,9,10], nargs = "+", help = "Define on which splits perform the hyperpameter tuning.")
 parser_user.add_argument('--fraction_train_set', type = float, default = 0.9, help = "Define the fraction of points to use for training for the time-series of each province. The remaining points are used for validation. The split is performed in a time-order way for each time-series.")
 parser_user.add_argument('--format', type = str, default = "feather", choices = ["csv", "feather", "xlsx"], help = "The file format to store training and validation points.")
 parser_user.add_argument('--trial_steps', type = int, default = 300, help = "Define the number of hyeropt hyperparameter configurations to try for each prediction horizon of each split.")
 parser_user.add_argument('--n_jobs', type = int, default = 1, help = "Define the number of 'n_job' of the xgboost model.")
 parser_user.add_argument('--gui_interface', action = "store_true", help = "If you want to select the time features and the lags for each indicator through a GUI interface otherwise the corresponding default values are taken (see *_default*).")
+parser_user.add_argument('--gpu', action = "store_true", help = "If you want use gpu.")
 
 args = parser_user.parse_args()
 
 #################
 ### WORKSPACE ###
 #################
+
+CONTINUE = False
 
 # Create the workspace folder where all the results arising from the current hyperparameter tuning will be stored.
 if not os.path.exists(args.folder_path_to_workspace): 
@@ -44,6 +49,8 @@ if not os.path.exists(args.folder_path_to_workspace):
 else:
     if not click.confirm("The workspace selected already exist. If you continue, the hyperparameter tuning will continue starting from the existing information in the folder. Continue?", default = True):
         exit()
+    else:
+        CONTINUE = True
 
 # Load the values of some global variables defined during the creation of the dataset.
 with open(args.folder_path_to_dataset + "/global_variables", "rb") as f:
@@ -116,53 +123,72 @@ if not os.path.exists(dir_data_hyper):
     print("Complete!")
     
 # GUI interface (it allows to modify default time features and lags).
-if args.gui_interface:
-    interface = gui()
-    out = interface.GUI2(FEATURES_TIME, LAGS_DICT, defaultTimes2, defaultLags2)
-    # Check parameters.
-    if out is None:
-        raise ValueError("No values selected. You have to press 'Run' button.") 
-    elif out[1] is {}:
-        raise ValueError("You have to set a lag value for at least one indicator.") 
-else:
-    out = (defaultTimes2.copy(), defaultLags2.copy())
+if not CONTINUE:
+    if args.gui_interface:
+        interface = gui()
+        out = interface.GUI2(FEATURES_TIME, LAGS_DICT, defaultTimes2, defaultLags2)
+        # Check parameters.
+        if out[1] is {}:
+            raise ValueError("You have to set a lag value for at least one indicator.") 
+    else:
+        out = (defaultTimes2.copy(), defaultLags2.copy())
 
-# Add time features to lags dictionary.
-lags_dict = out[1].copy()
-for feature in out[0]:
-    lags_dict[feature] = None
-    
-# Save the lags dictionary.
-with open(args.folder_path_to_workspace + "/lags_dict", "wb") as fp:
-    pickle.dump(lags_dict, fp)
+    # Add time features to lags dictionary.
+    lags_dict = out[1].copy()
+    for feature in out[0]:
+        lags_dict[feature] = None
+        
+    # Save the lags dictionary.
+    with open(args.folder_path_to_workspace + "/lags_dict", "wb") as fp:
+        pickle.dump(lags_dict, fp)
+    # Save the features name considered during this hyperparameter search.
+    with open(args.folder_path_to_workspace + "/features.txt", "w") as output:
+        for feature in lags_dict.keys():
+            output.write(str(feature) + "\n")
+else:
+    # Load the lags dictionary defined during in a previous hyperparameter tuning.
+    with open(args.folder_path_to_workspace + "/lags_dict", "rb") as fp:
+        lags_dict = pickle.load(fp)
 
 # Space of configurations: define the space of configurations to which perform the hyperparameter tuning. We define two spaces with different natures.
 
-# GUI interface (it allows to modify default feature selection).
-if args.gui_interface:
-    space1 = defaultSpace1.copy()
-    interface = gui()
-    space2 = interface.GUI3(list(lags_dict.keys()), TARGET)
-    space2 = {k: hp.quniform(k, 0, 1, 1) if v else 1. for k,v in space2.items()}
+if not CONTINUE:
+    # GUI interface (it allows to modify default feature selection).
+    if args.gui_interface:
+        space1 = defaultSpace1.copy()
+        interface = gui()
+        space2 = interface.GUI3(list(lags_dict.keys()), TARGET)
+        space2 = {k: hp.quniform(k, 0, 1, 1) if v else 1. for k,v in space2.items()}
+    else:
+        space1 = defaultSpace1.copy()
+        space2 = defaultSpace2.copy()
+
+    # Merge the two dictionary to perform the hyperparameter tuning on both dictionaries.
+    space = dict(space1, **space2)
+
+    # Save the parameter names of the total set of parameters.
+    with open(args.folder_path_to_workspace + "/space", "wb") as fp:
+        pickle.dump(space, fp)
+
+    # Save the parameter names of the first set of parameters.
+    with open(args.folder_path_to_workspace + "/space1", "wb") as fp:
+        pickle.dump(space1, fp)
+
+    # Save the parameter names of the second set of parameters.
+    with open(args.folder_path_to_workspace + "/space2", "wb") as fp:
+        pickle.dump(space2, fp)
 else:
-    space1 = defaultSpace1.copy()
-    space2 = defaultSpace2.copy()
+    # Load the parameter names of the first set of parameters.
+    with open(args.folder_path_to_workspace + "/space1", "rb") as fp:
+        space1 = pickle.load(fp)
+        
+    # Load the parameter names of the second set of parameters.
+    with open(args.folder_path_to_workspace + "/space2", "rb") as fp:
+        space2 = pickle.load(fp)
 
-# Merge the two dictionary to perform the hyperparameter tuning on both dictionaries.
-space = dict(space1, **space2)
-
-# Save the parameter names of the total set of parameters.
-with open(args.folder_path_to_workspace + "/space", "wb") as fp:
-    pickle.dump(list(space.keys()), fp)
-
-# Save the parameter names of the first set of parameters.
-with open(args.folder_path_to_workspace + "/space1", "wb") as fp:
-    pickle.dump(list(space1.keys()), fp)
-
-# Save the parameter names of the second set of parameters.
-with open(args.folder_path_to_workspace + "/space2", "wb") as fp:
-    pickle.dump(list(space2.keys()), fp)
-
+    # Merge the two dictionary to perform the hyperparameter tuning on both dictionaries.
+    space = dict(space1, **space2)
+    
 ############
 ### MAIN ###
 ############
@@ -205,7 +231,10 @@ def hyperparameters(space, split_number, h, training, validation):
     y_validation = pd.concat([Xy_validation[country][1] for country in COUNTRIES]).reset_index(drop = True)
 
     # Training.
-    model = xgb.XGBRegressor(**space_model, objective = "reg:squarederror", tree_method = "hist", n_jobs = args.n_jobs)
+    if args.gpu:
+        model = xgb.XGBRegressor(**space_model, objective = "reg:squarederror", tree_method = "gpu_hist", n_jobs = args.n_jobs)
+    else:
+        model = xgb.XGBRegressor(**space_model, objective = "reg:squarederror", tree_method = "hist", n_jobs = args.n_jobs)
     if len(trials.trials) == 0:
         model.fit(X_train, y_train) 
         n_estimators = model.n_estimators
@@ -283,7 +312,8 @@ for split_number in args.splits_to_consider:
                         space = space,
                         algo = tpe.suggest,
                         max_evals = max_trials,
-                        trials = trials)
+                        trials = trials, 
+                        rstate = rstate)
 
             # Save the hyperopt trials into a file.
             pickle.dump(trials, open(args.folder_path_to_workspace + f"/hyperopt/hyp_trials_split_{split_number}_h_{h+1}.p", "wb"))
@@ -313,7 +343,8 @@ for split_number in args.splits_to_consider:
                         space = space,
                         algo = tpe.suggest,
                         max_evals = max_trials,
-                        trials = trials)
+                        trials = trials, 
+                        rstate = rstate)
 
             # Save the hyperopt trials into a file.
             pickle.dump(trials, open(args.folder_path_to_workspace + f"/hyperopt/hyp_trials_split_{split_number}_h_{h+1}.p", "wb"))

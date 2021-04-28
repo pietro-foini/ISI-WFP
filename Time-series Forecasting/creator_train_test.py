@@ -5,7 +5,7 @@ import pickle
 import shutil
 import click
 import os
-from _gui import gui
+from _gui import *
 from _utils import *
 from _default import *
 
@@ -73,15 +73,32 @@ for country in args.countries:
     # Append country.
     dfs.append(df)
 
-# Check if the indicators are present for all the countries and their provinces (necessary condition). 
-if not all_equal(indicators):
-    raise ValueError("All the provinces of all the selected countries must contain the same indicators.")
+# Concatenate data of the countries.
+df = pd.concat(dfs, axis = 1)
+
+# GUI interface (it allows to select only some indicators).
+if args.gui_interface:
+    select_indicators = df.columns.get_level_values(2).unique()
+    
+    interface = gui()
+    select_indicators = interface.GUI4(list(select_indicators), args.target)
+    select_indicators = [k for k,v in select_indicators.items() if v]
+    
+    indicators = [list(set(elem).intersection(set(select_indicators))) for elem in indicators]
+
+    # Check if the indicators are present for all the countries and their provinces (necessary condition). 
+    if not all_equal(indicators):
+        raise ValueError("All the provinces of all the selected countries must contain the same indicators.")
+
+    df = df.loc[:, df.columns.get_level_values(2).isin(select_indicators)]
+else:
+    # Check if the indicators are present for all the countries and their provinces (necessary condition). 
+    if not all_equal(indicators):
+        raise ValueError("All the provinces of all the selected countries must contain the same indicators.")
     
 # Define the unique indicators of this dataset.
 indicators = indicators[0]
 
-# Concatenate data of the countries.
-df = pd.concat(dfs, axis = 1)
 df.to_csv(args.folder_path_to_dataset + "/dataset.csv")
 
 # Define a default lags dictionary for each indicator present in the dataset.

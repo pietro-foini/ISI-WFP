@@ -252,16 +252,6 @@ def entropy_rate_discrete(X, h = 1, k = 1):
 
     return -H
 
-def compute_T(df, m = 3, h = 1, kx = 1, ky = 1):   
-    """
-    Compute the correlation matrix using symbolic transfer entropy as metric.
-    
-    """
-    
-    T = corr_pairwise(df, lambda x, y: calc_ste(x.values, y.values, m = m, h = h, kx = kx, ky = ky))
-    
-    return T
-
 def to_symbolization(X, m = 3, pattern = False):
     """
     Convert scalar time-series into a symbolic representation using an embedding dimension m.
@@ -298,30 +288,3 @@ def rolling_window(x, window):
     strides = list(x.strides)
     strides.insert(0, strides[0])
     return np.lib.stride_tricks.as_strided(x, shape = tuple(shape), strides = tuple(strides))
-
-def corr_pairwise(df, method = None):
-    """
-    This function returns a correlation matrix given a custom method.
-
-    Parameters
-    ----------
-    df: dataframe.
-    method: the function to use to build the correlation matrix.
-
-    """
-    # Define the correlation matrix to fill with values.
-    corr = pd.DataFrame(index = df.columns, columns = df.columns)
-    
-    def interation_1(serie):
-        source = serie
-        
-        def interation_2(serie, source):
-            target = serie
-            correlation = method(source, target)
-            corr[source.name].loc[target.name] = correlation
-
-        df.apply(interation_2, args = [source])
-     
-    df.apply(interation_1)
-    
-    return corr

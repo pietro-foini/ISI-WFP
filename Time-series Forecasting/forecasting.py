@@ -6,10 +6,10 @@ import shutil
 import pickle
 from scipy.signal import savgol_filter
 from sklearn.metrics import mean_squared_error as mse
-from _gui import gui
+from _gui import *
 from _default import *
 from _utils import *
-from _model import model
+from _model import *
 
 # Add the python path to the folder containing some custom packages.
 import sys
@@ -22,8 +22,8 @@ from NestedCV.NestedCV import NestedCV
 
 parser_user = argparse.ArgumentParser(description = "This file allows to forecast the target time-series at provincial level using the configuration defined during the creation of the dataset. It is possible to use the parameters found through a previous hyperparameter tuning.", formatter_class = argparse.ArgumentDefaultsHelpFormatter)
 
-parser_user.add_argument('folder_path_to_dataset', type = str, help = "The path to the folder containing the dataset (training and test points).")
-parser_user.add_argument('--folder_path_to_workspace', type = str, default = "./output", help = "The path to the folder where all the results arising from the current analysis will be stored.")
+parser_user.add_argument('--folder_path_to_dataset', type = str, default = "./dataset", help = "The path to the folder containing the dataset (training and test points).")
+parser_user.add_argument('--folder_path_to_workspace', type = str, default = "./output_forecasting", help = "The path to the folder where all the results arising from the current analysis will be stored.")
 parser_user.add_argument('--folder_path_to_hyperparameters', type = str, help = "The path to the folder containing the results obtained from a previous hyperparameter tuning. If defined, the forecasting is performed using the corresponding best configurations found, otherwise you can define a configuration through a GUI interface. In this last case, the xgboost parameter are set to their default values.")
 parser_user.add_argument('--no_smooth_prediction', action = "store_false", help = "If you don't want to smooth the output predictions.")
 parser_user.add_argument('--n_jobs', type = int, default = 1, help = "Define the number of 'n_job' of the xgboost model.")
@@ -71,9 +71,11 @@ if args.folder_path_to_hyperparameters is not None:
     # Load the names of the parameters of the model.
     with open(args.folder_path_to_hyperparameters + "/space1", "rb") as fp:
         PARAMETER_NAMES_MODEL = pickle.load(fp)
+        PARAMETER_NAMES_MODEL = list(PARAMETER_NAMES_MODEL.keys())
     # Load the names of the parameters of the indicators.
     with open(args.folder_path_to_hyperparameters + "/space2", "rb") as fp:
         PARAMETER_NAMES_FEATURE = pickle.load(fp)   
+        PARAMETER_NAMES_FEATURE = list(PARAMETER_NAMES_FEATURE.keys())
     # Store information regarding hyperparameter tuning.
     HYPER = (BEST_RESULTS, PARAMETER_NAMES_MODEL, PARAMETER_NAMES_FEATURE)
 else:

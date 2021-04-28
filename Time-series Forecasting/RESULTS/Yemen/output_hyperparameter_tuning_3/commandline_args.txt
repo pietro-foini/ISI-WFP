@@ -1,0 +1,8 @@
+./Yemen/dataset
+--folder_path_to_workspace
+./Yemen/output_hyperparameter_tuning_3
+--n_jobs
+3
+--trial_steps
+300
+--gui_interface
