@@ -16,7 +16,7 @@ from _gui import *
 from _utils import *
 from _default import *
 
-rstate = np.random.RandomState(123)
+#rstate = np.random.RandomState(123) # Put it into 'fmin' of hyperopt.
 
 ###############################
 ### USER-DEFINED PARAMETERS ###
@@ -312,8 +312,7 @@ for split_number in args.splits_to_consider:
                         space = space,
                         algo = tpe.suggest,
                         max_evals = max_trials,
-                        trials = trials, 
-                        rstate = rstate)
+                        trials = trials)
 
             # Save the hyperopt trials into a file.
             pickle.dump(trials, open(args.folder_path_to_workspace + f"/hyperopt/hyp_trials_split_{split_number}_h_{h+1}.p", "wb"))
@@ -343,8 +342,7 @@ for split_number in args.splits_to_consider:
                         space = space,
                         algo = tpe.suggest,
                         max_evals = max_trials,
-                        trials = trials, 
-                        rstate = rstate)
+                        trials = trials)
 
             # Save the hyperopt trials into a file.
             pickle.dump(trials, open(args.folder_path_to_workspace + f"/hyperopt/hyp_trials_split_{split_number}_h_{h+1}.p", "wb"))
