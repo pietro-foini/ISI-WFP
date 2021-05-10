@@ -4,7 +4,8 @@ import itertools
 import xgboost as xgb
 from _utils import *
 
-def model(train, test, lags_dict, out, target, split_number, hyper = None, format = None, dir_data = None, n_jobs = 1):
+def model(train, test, lags_dict, out, target, split_number, hyper = None, format = None, dir_data = None, 
+          importance_type = "weight", n_jobs = 1):
     """
     This function allows to predict 'out' steps ahead in the future of the 'target' variable of each site in the
     'train' group. The predictions of 'out' steps in the future start from the last date of the 'train' group 
@@ -108,8 +109,11 @@ def model(train, test, lags_dict, out, target, split_number, hyper = None, forma
         # Train model.
         model.fit(X_train, y_train)
         
+        # Feature importance.
+        feature_importance = model.get_booster().get_score(importance_type = importance_type)
+        
         # Save models.
-        models[h+1] = (model, X_train.columns)
+        models[h+1] = (model, X_train.columns, feature_importance)
         # Save training r2 scores.
         r2_train[h+1] = model.score(X_train, y_train)
         # Forecasting.

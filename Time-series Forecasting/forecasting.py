@@ -27,6 +27,7 @@ parser_user.add_argument('--folder_path_to_workspace', type = str, default = "./
 parser_user.add_argument('--folder_path_to_hyperparameters', type = str, help = "The path to the folder containing the results obtained from a previous hyperparameter tuning. If defined, the forecasting is performed using the corresponding best configurations found, otherwise you can define a configuration through a GUI interface. In this last case, the xgboost parameter are set to their default values.")
 parser_user.add_argument('--no_smooth_prediction', action = "store_false", help = "If you don't want to smooth the output predictions.")
 parser_user.add_argument('--n_jobs', type = int, default = 1, help = "Define the number of 'n_job' of the xgboost model.")
+parser_user.add_argument('--importance_type', choices = ["weight", "gain", "cover", "total_gain", "total_cover"], default = "weight", help = "Define the type of xgboost feature importance.")
 parser_user.add_argument('--gui_interface', action = "store_true", help = "If you want to select the time features and the lags for each indicator through a GUI interface otherwise the corresponding default values are taken (see *_default*). This option is valid only if you don't use the results from a previous hyperparameter tuning.")
 
 args = parser_user.parse_args()
@@ -40,6 +41,7 @@ if os.path.exists(args.folder_path_to_workspace):
     shutil.rmtree(args.folder_path_to_workspace) 
 os.makedirs(args.folder_path_to_workspace)
 os.makedirs(args.folder_path_to_workspace + "/features_selection")
+os.makedirs(args.folder_path_to_workspace + "/features_importance")
 
 # Load the values of some global variables defined during the creation of the dataset.
 with open(args.folder_path_to_dataset + "/global_variables", "rb") as f:
@@ -133,13 +135,19 @@ for split_number, (train, test) in SPLITS.items():
         ## MODEL ##
         # Train the model to predict the test_size points for each site (country and province).
         predictions, models, r2_train, shape_train = model(train, test, LAGS_DICT, TEST_SIZE, TARGET, split_number, hyper = HYPER, 
-                                                           format = FORMAT, dir_data = args.folder_path_to_dataset, n_jobs = args.n_jobs)
+                                                           format = FORMAT, dir_data = args.folder_path_to_dataset, 
+                                                           importance_type = args.importance_type, n_jobs = args.n_jobs)
 
         
-        # Save the features.
+        # Save the features and features importance.
+        with open(args.folder_path_to_workspace + f"/features_importance/importance_type.txt", "w") as fp:
+            fp.write("Feature importance type: %s" % (args.importance_type))
+        
         for h in models.keys():
             with open(args.folder_path_to_workspace + f"/features_selection/features_split_{split_number}_h_{h}", "wb") as fp:
                 pickle.dump(models[h][1], fp)
+            with open(args.folder_path_to_workspace + f"/features_importance/features_split_{split_number}_h_{h}", "wb") as fp:
+                pickle.dump(models[h][2], fp)
         
         # Smooth predictions.
         if args.no_smooth_prediction:
@@ -217,6 +225,12 @@ for split in forecast_splits.columns.get_level_values(0).unique():
     print(loss_overall)
     print("Country loss:")
     print(loss_sites.groupby(axis = 0, level = 0).mean())
+
+# Overall loss.
+loss_overall = pd.concat(loss_overall_dict)
+loss_overall = loss_overall.groupby(axis = 0, level = 1).mean()
+loss_overall.to_csv(args.folder_path_to_workspace + "/overall_loss.txt", sep = "\t")
+print("Loss overall: \n", loss_overall)
 
 # Compute loss for each site for each split.
 loss_sites = pd.concat(loss_sites_dict).unstack(0).reorder_levels([1, 0], axis = 1).sort_index(axis = 1, level = [0, 1])
