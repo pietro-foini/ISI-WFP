@@ -5,6 +5,7 @@ import pickle
 import shutil
 import click
 import os
+
 from _gui import *
 from _utils import *
 from _default import *
@@ -20,6 +21,8 @@ from NestedCV.NestedCV import NestedCV
 ###############################
 
 parser_user = argparse.ArgumentParser(description = "This file allows to create the training (input and output) and test (input) points for the selected countries at provincial level in order to forecast the corresponding target time-series.", formatter_class = argparse.ArgumentDefaultsHelpFormatter)
+
+# Example usage: python creator_train_test.py --countries "Burkina Faso" --end_date "2021-01" --folder_path_to_dataset "./Burkina Faso/dataset" --number_of_splits 5 --gui_interface
 
 parser_user.add_argument('--countries', type = str, default = ["Yemen"], nargs = "+", help = "Select the countries to consider for the current analysis.")
 parser_user.add_argument('--start_date', type = str, default = "2018-01-01", help = "The start date - format YYYY-MM-DD. There are no important constraints on the choice of this date. The algorithm (see *LagsCreator*) automatically create the training and the test points starting from the availability of data.")
@@ -41,7 +44,7 @@ args = parser_user.parse_args()
 
 # Create the workspace folder for storing training and test points.
 if os.path.exists(args.folder_path_to_dataset):
-    if not click.confirm("If you continue you will overwrite the existing dataset (folder).", default = True):
+    if not click.confirm("If you continue you will overwrite the existing dataset (folder). Continue?", default = True):
         exit() 
     shutil.rmtree(args.folder_path_to_dataset) 
 os.makedirs(args.folder_path_to_dataset)

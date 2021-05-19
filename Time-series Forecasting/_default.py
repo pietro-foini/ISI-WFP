@@ -67,6 +67,3 @@ defaultStarting_point_space1 = {"gamma": 0.,
                                 "learning_rate": 0.1, 
                                 "subsample": 1.,
                                 "colsample_bytree": 1.}
-
-
-

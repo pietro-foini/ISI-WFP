@@ -1,0 +1,11 @@
+--folder_path_to_dataset
+./Yemen/dataset
+--folder_path_to_workspace
+./Yemen/out_hyper_1
+--n_jobs
+6
+--gui_interface
+--fraction_train_set
+0.8
+--trial_steps
+600

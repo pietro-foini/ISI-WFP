@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import itertools
 import xgboost as xgb
+
 from _utils import *
 
 def model(train, test, lags_dict, out, target, split_number, hyper = None, format = None, dir_data = None, 
@@ -56,7 +57,7 @@ def model(train, test, lags_dict, out, target, split_number, hyper = None, forma
                 if hyper is not None:
                     # Select features.
                     # Decide the indicators to keep based on values (0 or 1).
-                    space_features = [k for k,v in dict(best_parameter_feature.loc[h+1]).items() if v == 1]
+                    space_features = [k for k, v in dict(best_parameter_feature.loc[h+1]).items() if v == 1]
                     # Select all the corresponding lags.
                     space_features = {feature: take_lags(feature, lags = lags_dict[feature], h = h+1) for feature in space_features}
                     # Flat dictionary values.

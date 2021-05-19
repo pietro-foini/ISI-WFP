@@ -1,3 +1,6 @@
+import warnings
+warnings.filterwarnings("ignore")
+
 import numpy as np
 import pandas as pd
 import argparse
@@ -6,6 +9,7 @@ import shutil
 import pickle
 from scipy.signal import savgol_filter
 from sklearn.metrics import mean_squared_error as mse
+
 from _gui import *
 from _default import *
 from _utils import *
@@ -22,9 +26,11 @@ from NestedCV.NestedCV import NestedCV
 
 parser_user = argparse.ArgumentParser(description = "This file allows to forecast the target time-series at provincial level using the configuration defined during the creation of the dataset. It is possible to use the parameters found through a previous hyperparameter tuning.", formatter_class = argparse.ArgumentDefaultsHelpFormatter)
 
+# Example usage: python forecasting.py --folder_path_to_dataset "./Yemen/dataset" --folder_path_to_workspace "./Yemen/out_hyper_1/out_test" --folder_path_to_hyperparameters "./Yemen/out_hyper_1" --n_jobs 3
+
 parser_user.add_argument('--folder_path_to_dataset', type = str, default = "./dataset", help = "The path to the folder containing the dataset (training and test points).")
 parser_user.add_argument('--folder_path_to_workspace', type = str, default = "./output_forecasting", help = "The path to the folder where all the results arising from the current analysis will be stored.")
-parser_user.add_argument('--folder_path_to_hyperparameters', type = str, help = "The path to the folder containing the results obtained from a previous hyperparameter tuning. If defined, the forecasting is performed using the corresponding best configurations found, otherwise you can define a configuration through a GUI interface. In this last case, the xgboost parameter are set to their default values.")
+parser_user.add_argument('--folder_path_to_hyperparameters', type = str, help = "The path to the folder containing the results obtained from a previous hyperparameter tuning. If defined, the forecasting is performed using the corresponding best configurations found, otherwise you can define a configuration through a GUI interface. In the last case, the xgboost parameter are set to their default values.")
 parser_user.add_argument('--no_smooth_prediction', action = "store_false", help = "If you don't want to smooth the output predictions.")
 parser_user.add_argument('--n_jobs', type = int, default = 1, help = "Define the number of 'n_job' of the xgboost model.")
 parser_user.add_argument('--importance_type', choices = ["weight", "gain", "cover", "total_gain", "total_cover"], default = "weight", help = "Define the type of xgboost feature importance.")

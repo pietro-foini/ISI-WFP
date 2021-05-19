@@ -1,0 +1,17 @@
+--folder_path_to_dataset
+./Burkina Faso/dataset
+--folder_path_to_workspace
+./Burkina Faso/out_hyper_3
+--n_jobs
+3
+--splits_to_consider
+1
+2
+3
+4
+5
+--fraction_train_set
+0.8
+--trial_steps
+600
+--gui_interface
