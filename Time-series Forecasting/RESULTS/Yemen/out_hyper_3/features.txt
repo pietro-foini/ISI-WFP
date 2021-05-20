@@ -1,0 +1,13 @@
+Price cereals and tubers
+Rainfalls (mm)
+1 Month Anomaly Rainfalls (%)
+Ramadan
+rCSI
+Fatalities
+NDVI Anomaly
+FCG
+Code
+Population
+Day
+Month
+Year
