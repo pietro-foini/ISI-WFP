@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import itertools 
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 def save(df, name, format):
     """Function that allows saving dataframe using different format."""
@@ -36,7 +37,8 @@ def r2(y_true, y_pred):
     """r2 metric according to xgboost implementation."""
     return (1 - (((y_true - y_pred) ** 2).sum())/(((y_true - y_true.mean()) ** 2).sum()))
 
-def plot_r2_box_plot(data, ax, label1, label2, title = None, table = None, color1 = "dodgerblue", color2 = "deeppink"):
+def plot_r2_box_plot(data, ax, label1, label2, title = None, table = None, color1 = sns.color_palette("tab10")[0], 
+                     color2 = sns.color_palette("tab10")[1]):
     # Define x-ticks.
     x_ticks = np.arange(1, len(data) + 1)
     medianprops = dict(linestyle = "-", linewidth = 2.5)

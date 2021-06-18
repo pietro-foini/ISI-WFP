@@ -62,7 +62,8 @@ class TsIP:
         
         """
         # Set default trace colors with colorway of the time-series.
-        colorway = sns.color_palette("hls", 8).as_hex()
+        colorway = sns.color_palette("tab10", 8).as_hex()
+        #colorway = sns.color_palette("hls", 8).as_hex()
 
         # Visualization using Matplotlib library.
         if self.matplotlib:
