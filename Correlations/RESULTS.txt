@@ -1,0 +1,8 @@
+Define for each country the features that will be not considered for future analysis due to high correlations:
+
+- Yemen: NDVI, 3 Months Anomaly Rainfalls (%), Exchange rate
+- Syria:  NDVI, 3 Months Anomaly Rainfalls (%), Exchange rate
+- Burkina Faso: NDVI, 3 Months Anomaly Rainfalls (%), Exchange rate
+- Nigeria: NDVI, 3 Months Anomaly Rainfalls (%)
+- Mali: NDVI, 3 Months Anomaly Rainfalls (%)
+- Cameroon: NDVI, 3 Months Anomaly Rainfalls (%)

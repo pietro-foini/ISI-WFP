@@ -1,6 +1,7 @@
 from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.patheffects as pe
 import matplotlib.pyplot as plt
+import seaborn as sns
 import geopandas as gpd
 import numpy as np
 import warnings
@@ -41,7 +42,7 @@ def draw_adminstratas(country, adminstratas, adminstratas_to_highlight, folder_t
         raise ValueError("The parameter 'adminstratas_to_highlight' must be a subset of the parameter 'adminstratas'.")
     
     # Define cmap.
-    cmap = LinearSegmentedColormap.from_list("cmap", ["#83b9ed", "#b3e9ff"], N = 2)
+    cmap = LinearSegmentedColormap.from_list("cmap", [sns.color_palette("tab10")[1], sns.color_palette("pastel")[1]], N = 2)
     
     # Load the dataframe of the country.
     gdf = gpd.read_file(folder_to_shapefiles)
