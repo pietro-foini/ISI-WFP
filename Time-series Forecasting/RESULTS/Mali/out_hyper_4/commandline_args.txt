@@ -1,0 +1,15 @@
+--folder_path_to_dataset
+./Mali/dataset
+--folder_path_to_workspace
+./Mali/out_hyper_4
+--n_jobs
+6
+--splits_to_consider
+1
+2
+3
+--fraction_train_set
+0.8
+--trial_steps
+600
+--gui_interface

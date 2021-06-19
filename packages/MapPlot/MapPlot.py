@@ -15,7 +15,7 @@ plt.style.use("default")
 #
 # Year: 2020
     
-def draw_adminstratas(country, adminstratas, adminstratas_to_highlight, folder_to_shapefiles, figsize = (10, 7), 
+def draw_adminstratas(country, adminstratas, folder_to_shapefiles, adminstratas_to_highlight = None, figsize = (10, 7), 
                       annotation = False, annotation_selected = False, path_to_save = None, dpi = 100):
     """
     This module allows to plot the political boundaries of the selected country highlighting the administrative regions 
@@ -24,11 +24,11 @@ def draw_adminstratas(country, adminstratas, adminstratas_to_highlight, folder_t
     Parameters
     ----------
     country: a string parameter corresponding to the name of the country.
-    adminstratas: a list of the administrative region names that will be colored when viewing the map using an alpha
-       transparency of 0.5. If some regions are missing, they will be highlighted with a specific pattern.
-    adminstratas_to_highlight: a sublist of the administrative region names (they must be contained in the 'adminstratas' parameter)
-       that will be colored when viewing the map using an alpha transparency of 1.0.
+    adminstratas: a list of the administrative region names that will be colored. If some regions are missing, they will be 
+       highlighted with a specific pattern.
     folder_to_shapefiles: the path to reach the folder where the shapefiles of the country are stored.
+    adminstratas_to_highlight: a sublist of the administrative region names (they must be contained in the 'adminstratas' parameter)
+       that will be colored when viewing the map using another color.    
     figsize: the size of the map.
     annotation: a boolean parameter to set if you want to visualize all the administartive region names of the country.
     annotation_selected: a boolean parameter to set if you want to visualize only the adminstartive region names provided into the
@@ -38,11 +38,12 @@ def draw_adminstratas(country, adminstratas, adminstratas_to_highlight, folder_t
     
     """
     # Check parameters.
-    if not set(adminstratas_to_highlight).issubset(set(adminstratas)):
-        raise ValueError("The parameter 'adminstratas_to_highlight' must be a subset of the parameter 'adminstratas'.")
+    if adminstratas_to_highlight is not None:
+        if not set(adminstratas_to_highlight).issubset(set(adminstratas)):
+            raise ValueError("The parameter 'adminstratas_to_highlight' must be a subset of the parameter 'adminstratas'.")
     
     # Define cmap.
-    cmap = LinearSegmentedColormap.from_list("cmap", [sns.color_palette("tab10")[1], sns.color_palette("pastel")[1]], N = 2)
+    cmap = LinearSegmentedColormap.from_list("cmap", [sns.color_palette("pastel")[1], sns.color_palette("tab10")[1]], N = 2)
     
     # Load the dataframe of the country.
     gdf = gpd.read_file(folder_to_shapefiles)
@@ -50,10 +51,13 @@ def draw_adminstratas(country, adminstratas, adminstratas_to_highlight, folder_t
     # Draw only the adminstratas defined by the user.
     def assign_color(x):
         if x["region"] in adminstratas:
-            if x["region"] in adminstratas_to_highlight:
-                return 1
+            if adminstratas_to_highlight is not None:
+                if x["region"] in adminstratas_to_highlight:
+                    return 1
+                else:
+                    return 0
             else:
-                return 0
+                return 1
         else:
             return np.nan
 
