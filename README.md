@@ -27,7 +27,7 @@ The script has been tested running Python 3.6 (Anaconda/miniconda), with the fol
 - `pandas==1.1.2`
 - `hyperopt==0.2.3`
 - `seaborn==0.11.1`
-- `geopandas==0.6.2`
+- `geopandas==0.7.0`
 - `scipy==1.3.1`
 - `ipywidgets==7.5.1`
 - `dataframe_image==0.1.1`
@@ -37,6 +37,15 @@ The script has been tested running Python 3.6 (Anaconda/miniconda), with the fol
 - `plotly==4.2.1`
 - `Click==7.0`
 - `xlrd==1.2.0`
+- `descartes==1.1.0`
+- `scikit-learn==0.21.3`
+- `mapclassify==2.1.1`
+- `patsy==0.5.1`
+- `statsmodels==0.11.1`
+- `pyinform==0.2.0`
+- `imageio==2.4.1`
+- `pyarrow==1.0.0`
+- `openpyxl==2.6.2`
 
 
 ## License
