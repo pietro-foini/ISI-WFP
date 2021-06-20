@@ -57,9 +57,11 @@ The script has been tested running Python 3.6 (Anaconda/miniconda), with the fol
 
 MIT
 
-## Notes
+## Using binder
 
-Github performs a static render of the notebooks and it doesn't include the embedded HTML/JavaScript that makes up a plotly/widgets graph. One option to better expore the proect from remote is to paste the link to the GitHub notebook into http://nbviewer.jupyter.org/.
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/pietro-foini/ISI-WFP/master?urlpath=%2Flab)
+
+Many of the materials work using interactive visualization. With the click of a button, users get a virtual compute environment where they can run your code.
 
 ## Contact Us
 
