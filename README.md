@@ -1,4 +1,4 @@
-# Forecasting food insecurity
+# Forecasting food insecurity [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/pietro-foini/ISI-WFP/HEAD)
 
 Repository for paper: ***
 
@@ -59,7 +59,7 @@ MIT
 
 ## Using binder
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/pietro-foini/ISI-WFP/HEAD)
+
 
 With the click of a button, users get a virtual compute environment where they can run the code.
 
