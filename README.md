@@ -57,12 +57,6 @@ The script has been tested running Python 3.6 (Anaconda/miniconda), with the fol
 
 MIT
 
-## Using binder
-
-
-
-With the click of a button, users get a virtual compute environment where they can run the code.
-
 ## Contact Us
 
 Please open an issue or contact pietro.foini1@gmail.com with any questions.
