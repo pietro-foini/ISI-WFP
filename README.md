@@ -23,7 +23,7 @@ We have divided the main analyzes of the project into several folders. The *pack
 
 We provide a yml file containing the necessary packages for the current project. Once you have [conda](https://docs.anaconda.com/anaconda/install/) installed, you can create an environment as follows:
 ```
-conda env create --file ISI_WFP.yml 
+conda env create --file environment.yml 
 ```
 
 ## Dependencies
