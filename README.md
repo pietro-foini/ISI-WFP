@@ -59,9 +59,9 @@ MIT
 
 ## Using binder
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/pietro-foini/ISI-WFP/master?urlpath=%2Flab)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/pietro-foini/ISI-WFP/HEAD)
 
-Many of the materials work using interactive visualization. With the click of a button, users get a virtual compute environment where they can run your code.
+With the click of a button, users get a virtual compute environment where they can run the code.
 
 ## Contact Us
 
