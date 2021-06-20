@@ -20,7 +20,7 @@ We have divided the main analyzes of the project into several folders. The *pack
 
 ## Dependencies
 
-The script has been tested running Python 3.6.6 (Anaconda/miniconda), with the following packages installed (along with their dependencies):
+The script has been tested running Python 3.6 (Anaconda/miniconda), with the following packages installed (along with their dependencies):
 
 - `pandas==1.1.2`
 - `hyperopt==0.2.3`
