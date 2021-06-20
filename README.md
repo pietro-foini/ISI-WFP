@@ -57,6 +57,10 @@ The script has been tested running Python 3.6 (Anaconda/miniconda), with the fol
 
 MIT
 
+## Notes
+
+Github performs a static render of the notebooks and it doesn't include the embedded HTML/JavaScript that makes up a plotly/widgets graph. One option to better expore the proect from remote is to paste the link to the GitHub notebook into http://nbviewer.jupyter.org/.
+
 ## Contact Us
 
 Please open an issue or contact pietro.foini1@gmail.com with any questions.
