@@ -57,6 +57,12 @@ The script has been tested running Python 3.6 (Anaconda/miniconda), with the fol
 
 MIT
 
+## How to Cite
+
+```
+@article{***}
+```
+
 ## Contact Us
 
 Please open an issue or contact pietro.foini1@gmail.com with any questions.
