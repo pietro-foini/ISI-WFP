@@ -19,6 +19,12 @@ Next, we focus on obtaining 30-days predictions for the food insecurity time-ser
 
 We have divided the main analyzes of the project into several folders. The *packages* folder contains some custom python packages used by other folders of the project. For good navigation within the project, we recommend that you first examine folders *Data Sources* and then *Dataset time-series*. The other folders (except the folder *packages*) are strictly dependent on the results of these two folders. In particular the recommended order for examining the remaining analyzes is as follows: *Correlation*, *Permutation Entropy*, *Symbolic Transfer Entropy* and *Time-series Forecasting*.
 
+## Install the Environment
+
+We provide a yml file containing the necessary packages for the current project. Once you have [conda](https://docs.anaconda.com/anaconda/install/) installed, you can create an environment as follows:
+```
+conda env create --file ISI_WFP.yml 
+```
 
 ## Dependencies
 
@@ -47,10 +53,9 @@ The script has been tested running Python 3.6 (Anaconda/miniconda), with the fol
 - `pyarrow==1.0.0`
 - `openpyxl==2.6.2`
 
-
 ## License
 
-
+MIT
 
 ## Contact Us
 
