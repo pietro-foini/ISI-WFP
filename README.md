@@ -39,7 +39,6 @@ The script has been tested running Python 3.6.6 (Anaconda/miniconda), with the f
 
 ## License
 
-MIT
 
 
 ## Contact Us
