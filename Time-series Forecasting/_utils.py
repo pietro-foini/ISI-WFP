@@ -56,7 +56,7 @@ def plot_r2_box_plot(data, ax, label1, label2, title = None, table = None, color
     ax.set_title(title)
     ax.set_xlabel("Prediction horizon")
     ax.set_ylabel("R$^2$")
-    ax.set_ylim([0, 1])
+    #ax.set_ylim([0, 1])
     ax.tick_params(labeltop = False, labelright = True)
     ax.set_xticks(ax.get_xticks() + 0.5)
     ax.set_xticklabels(x_ticks)  
