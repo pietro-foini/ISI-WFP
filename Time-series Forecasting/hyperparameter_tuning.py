@@ -236,6 +236,7 @@ def hyperparameters(space, split_number, h, training, validation):
         model = xgb.XGBRegressor(**space_model, objective = "reg:squarederror", tree_method = "gpu_hist", n_jobs = args.n_jobs)
     else:
         model = xgb.XGBRegressor(**space_model, objective = "reg:squarederror", tree_method = "hist", n_jobs = args.n_jobs)
+    
     if len(trials.trials) == 0:
         model.fit(X_train, y_train) 
         n_estimators = model.n_estimators
