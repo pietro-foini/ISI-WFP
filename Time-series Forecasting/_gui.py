@@ -80,7 +80,7 @@ class gui:
             self.output[k] = Variable[k].get()
         self.root.destroy()
 
-    def GUI1(self, defaultLags):
+    def GUI_lags_1(self, defaultLags):
         # Set label title into window.
         title = self.Label(self.frame, text = "Lags selection for indicators:", rowno = 0, colno = 0, size = 14)
         self.canvas.grid(row = 1, column = 0)
@@ -102,7 +102,7 @@ class gui:
         
         return self.output
         
-    def GUI2(self, allowedTimes, allowedLags, defaultTimes = None, defaultLags = None):
+    def GUI_lags_2(self, allowedTimes, allowedLags, defaultTimes = None, defaultLags = None):
         self.canvas.grid(row = 0, column = 0)
         self.canvasFrame = tk.Frame(self.canvas)
         self.canvas.create_window(0, 0, window = self.canvasFrame, anchor = "nw")
@@ -140,7 +140,37 @@ class gui:
         
         return self.output
     
-    def GUI3(self, features, target):
+    def GUI_indicators_1(self, indicators, target):
+        # Set label.
+        lb = self.Label(self.frame, text = "Select the indicators you want to consider:", 
+                        rowno = 0, colno = 0, size = 12, wraplength = 300)
+        self.canvas.config(width = 200, height = 250)
+        self.canvas.grid(row = 1, column = 0)
+        self.canvasFrame = tk.Frame(self.canvas)
+        self.canvas.create_window(0, 0, window = self.canvasFrame, anchor = "nw")
+        # Set checkbuttons.
+        Variable = {v: tk.BooleanVar(value = True) for v in indicators}
+        for i,v in enumerate(indicators):
+            if v == target:
+                self.Checkbutton(self.canvasFrame, v, Variable[v], rowno = i+2, colno = 0, disable = True)
+            else:
+                self.Checkbutton(self.canvasFrame, v, Variable[v], rowno = i+2, colno = 0)
+        # Set button.
+        btn = tk.Button(self.frame, text = "Run", command = lambda: self.run3(Variable))
+        btn.grid(row = 3, column = 0)
+
+        # Scroll vertical.
+        yscroll = tk.Scrollbar(self.frame, orient = tk.VERTICAL)
+        yscroll.config(command = self.canvas.yview)
+        self.canvas.config(yscrollcommand = yscroll.set)
+        yscroll.grid(row = 1, column = 1, sticky = "ns")
+        self.canvasFrame.bind("<Configure>", lambda x: self.update_scrollregion(x, self.canvas))
+
+        self.root.mainloop()
+        
+        return self.output
+    
+    def GUI_indicators_2(self, features, target):
         # Set label.
         lb = self.Label(self.frame, text = "Select the features on which to apply a feature selection:", 
                         rowno = 0, colno = 0, size = 12, wraplength = 300)
@@ -173,33 +203,4 @@ class gui:
         
         return self.output
     
-    def GUI4(self, features, target):
-        # Set label.
-        lb = self.Label(self.frame, text = "Select the indicators to consider:", 
-                        rowno = 0, colno = 0, size = 12, wraplength = 300)
-        self.canvas.config(width = 200, height = 250)
-        self.canvas.grid(row = 1, column = 0)
-        self.canvasFrame = tk.Frame(self.canvas)
-        self.canvas.create_window(0, 0, window = self.canvasFrame, anchor = "nw")
-        # Set checkbuttons.
-        Variable = {v: tk.BooleanVar(value = True) for v in features}
-        for i,v in enumerate(features):
-            if v == target:
-                self.Checkbutton(self.canvasFrame, v, Variable[v], rowno = i+2, colno = 0, disable = True)
-            else:
-                self.Checkbutton(self.canvasFrame, v, Variable[v], rowno = i+2, colno = 0)
-        # Set button.
-        btn = tk.Button(self.frame, text = "Run", command = lambda: self.run3(Variable))
-        btn.grid(row = 3, column = 0)
-
-        # Scroll vertical.
-        yscroll = tk.Scrollbar(self.frame, orient = tk.VERTICAL)
-        yscroll.config(command = self.canvas.yview)
-        self.canvas.config(yscrollcommand = yscroll.set)
-        yscroll.grid(row = 1, column = 1, sticky = "ns")
-        self.canvasFrame.bind("<Configure>", lambda x: self.update_scrollregion(x, self.canvas))
-
-        self.root.mainloop()
-        
-        return self.output
     

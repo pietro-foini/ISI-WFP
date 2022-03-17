@@ -1,12 +1,12 @@
 # TsIP
 
-**TsIP** (Time-series Interactive Plot) is a python library developed to interactively visualize multiple time-series quickly and easily. 
-The implementation of this tool responds to the need to visualize time-series stored into a pandas dataframe with hierarchical multi-index on axis 1, taking advantage of dynamic user interaction.
+**TsIP** (**T**ime-**s**eries **I**nteractive **P**lot) is a python library developed to interactively visualize multiple time-series quickly and easily. 
+The implementation of this tool addresses the need to visualize time-series stored into a pandas dataframe with hierarchical multi-index on axis 1, taking advantage of dynamic user interaction.
 The time-series are plotted using either the *matplotlib* library or the *plotly* library (user will). For a more involving navigation within the time-series visualization, it is advice to use the plotly library rather than the matplotlib library.  
 
 ## Examples
 
-1. Supposing to have a simple dataframe `df` with a single level on axis 1 (we show only the first 5 rows):
+1. Supposing to have a simple dataframe `df` with a single level on axis 1:
 
 <p align="center">
 <img src="./images_readme/level1.png" width="800">
@@ -20,7 +20,7 @@ Using the TsIP library, we can easily visualize all the time-series with a simpl
 
 N.B. If `matplotlib = False`, the time-series are visualized using the plotly library which as you can see is much more engaging. Otherwise, a similar interactive plot is shown using the matplotlib library.
 
-2. Supposing to have a dataframe `df` with two levels on axis 1 (we show only the first 5 rows):
+2. Supposing to have a dataframe `df` with two levels on axis 1:
 
 <p align="center">
 <img src="./images_readme/level2.png" width="800">
@@ -38,7 +38,7 @@ N.B. The TsIP module works fine if all the levels of the dataframe have set a na
 <img src="./images_readme/level2_level_names.png" width="800">
 </p>
 
-3. Supposing to have a dataframe `df` with three levels on axis 1 (we show only the first 5 rows):
+3. Supposing to have a dataframe `df` with three levels on axis 1:
 
 <p align="center">
 <img src="./images_readme/level3.png" width="800">

@@ -10,7 +10,7 @@ import numpy as np
 # Year: 2020
 
 def calc_ste(X, Y, m = 3, h = 1, kx = 1, ky = 1):
-    """Symbolic Transfer Entropy[1][2].
+    """Symbolic Transfer Entropy [1,2].
     
     This code allows to compute the symbolic transfer entropy between two time-series X and Y given an embedding dimension m. 
     The first step of the algorithm works in order to convert the two time-series into corresponding symbolized representation.

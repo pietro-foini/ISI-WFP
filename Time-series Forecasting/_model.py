@@ -5,7 +5,7 @@ import xgboost as xgb
 
 from _utils import *
 
-def model(train, test, lags_dict, out, target, split_number, hyper = None, format = None, dir_data = None, 
+def model(train, test, lags_dict, out, target, split_number, start_date = None, hyper = None, format = None, dir_data = None, 
           importance_type = "weight", n_jobs = 1):
     """
     This function allows to predict 'out' steps ahead in the future of the 'target' variable of each site in the
@@ -13,6 +13,7 @@ def model(train, test, lags_dict, out, target, split_number, hyper = None, forma
     provided.
     
     """
+    
     # Use the best parameters obtained through a previous hyperparameter tuning.
     if hyper is not None:
         best_result, parameter_names_model, parameter_names_feature = hyper
@@ -31,27 +32,37 @@ def model(train, test, lags_dict, out, target, split_number, hyper = None, forma
     print("Loading data...")
 
     # Define the first level of multi-sites (countries level).
-    countries = train.columns.get_level_values(0).unique()
+    countries = train.columns.get_level_values("Country").unique()
+    provinces = {country: train[country].columns.get_level_values("AdminStrata").unique() for country in countries}
 
     # Creation of an unique pot for putting the training points (X, y) for all the multi-sites (countries and provinces) for each prediction horizon.
     training_points = {"X": {h+1: [] for h in range(out)}, 
                        "y": {h+1: [] for h in range(out)}}
     # Creation of the input test points specifically for each site (country and province) and prediction horizon.
-    test_input_points = {country: {province: {h+1: None for h in range(out)} for province in train[country].columns.get_level_values(0).unique()} for country in countries}
-
+    test_input_points = {country: {province: {h+1: None for h in range(out)} for province in provinces[country]} for country in countries}
     
     for country in countries:
         # Select the subdataframe corresponding to the current country.
         train_country = train[country]
-        # Define the second level of multi-sites (provinces level).
-        provinces = train_country.columns.get_level_values(0).unique()
-        for province in provinces:
+        for province in provinces[country]:
             for h in range(out):
                 # Training samples.
-                X_train = load(dir_data + f"/train/{country}/{province}/X_train_split_{split_number}_h_{h+1}", format) 
-                y_train = load(dir_data + f"/train/{country}/{province}/y_train_split_{split_number}_h_{h+1}", format) 
+                X_train = load(f"{dir_data}/train/{country}/{province}/X_train_split_{split_number}_h_{h+1}", format) 
+                y_train = load(f"{dir_data}/train/{country}/{province}/y_train_split_{split_number}_h_{h+1}", format) 
                 # Test samples.
-                X_test = load(dir_data + f"/test/{country}/{province}/X_test_split_{split_number}_h_{h+1}", format) 
+                X_test = load(f"{dir_data}/test/{country}/{province}/X_test_split_{split_number}_h_{h+1}", format) 
+                
+                if start_date is not None:
+                    try:
+                        t = X_train[[f"Year|x(t+{h+1})", f"Month|x(t+{h+1})", f"Day|x(t+{h+1})"]].copy()
+                        t.columns = ["year", "month", "day"]
+                    except:
+                        raise ValueError(f"Not enough temporal information to select {start_date} as starting point.")
+
+                    s = np.flatnonzero(pd.to_datetime(t) > start_date + pd.DateOffset(days = h+1))
+
+                    X_train = X_train.loc[s].reset_index(drop = True)
+                    y_train = y_train.loc[s].reset_index(drop = True)
 
                 # Get the features to keep for the current prediction horizon according to the hyperparameter tuning.
                 if hyper is not None:
@@ -85,7 +96,8 @@ def model(train, test, lags_dict, out, target, split_number, hyper = None, forma
     print("Forecasting...")
 
     # Create the dataframe where to store the predictions of the target.
-    columns = test.xs(target, axis = 1, level = 2, drop_level = False).rename(columns = {target: "Forecast"}).columns
+    columns = pd.MultiIndex.from_tuples(map(lambda x: (x[0], x[1], "Forecast"), [(i,x) for i in provinces for x in provinces[i]]), 
+                                        names = ["Country", "AdminStrata", "Indicator"])
     predictions = pd.DataFrame(index = test.index, columns = columns)
 
     # Training model.
@@ -120,9 +132,7 @@ def model(train, test, lags_dict, out, target, split_number, hyper = None, forma
         # Forecasting.
         for country in countries:
             X_test_list, y_test_list = list(), list()
-            # Define the second level multi-sites (provinces).
-            provinces = train[country].columns.get_level_values(0).unique()
-            for province in provinces:
+            for province in provinces[country]:
                 X_test = test_input_points[country][province][h+1]
                 y_hats = model.predict(X_test)[0]                
                 # Store the predicted values into the dataframe.

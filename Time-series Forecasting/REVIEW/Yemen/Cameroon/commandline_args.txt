@@ -1,0 +1,1 @@
+{'folder_path_to_dataset': './REVIEW/Yemen/dataset', 'folder_path_to_workspace': './REVIEW/Yemen/Cameroon/out_hyper', 'splits_to_consider': [8, 9, 10], 'fraction_train_set': 0.8, 'start_date': '2019-06-30', 'n_provinces': 9, 'format': 'feather', 'trial_steps': 600, 'early_stop_hyperopt': 150, 'n_jobs': 6, 'gui_interface': True, 'gpu': False}
