@@ -52,7 +52,10 @@ class NestedCV:
         # Create training and test sets for each split.
         splits_dict = dict()
         for i, split_number in enumerate(reversed(range(self.n_splits))):
-            index_test = pd.date_range(group.last("%dM" % (split_number+1)).index[0], periods = self.test_size, freq = freq)
+            if len(group.last("M").index) < self.test_size:
+                index_test = pd.date_range(group.last("%dM" % ((split_number+1)+1)).index[0], periods = self.test_size, freq = freq)
+            else:
+                index_test = pd.date_range(group.last("%dM" % (split_number+1)).index[0], periods = self.test_size, freq = freq)  
             train = group.loc[:index_test[0] -1*freq]
             test = group[group.index.isin(index_test)]
             if len(test) < self.test_size:

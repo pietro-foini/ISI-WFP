@@ -26,7 +26,7 @@ from NestedCV.NestedCV import NestedCV
 
 parser_user = argparse.ArgumentParser(description = "This file allows to forecast the target time-series at provincial level using the configuration defined during the creation of the dataset. It is possible to use the parameters found through a previous hyperparameter tuning.", formatter_class = argparse.ArgumentDefaultsHelpFormatter)
 
-# Example usage: python forecasting.py --folder_path_to_dataset "./Nigeria/dataset" --folder_path_to_workspace "./Nigeria/out_hyper/standard/out_test" --folder_path_to_hyperparameters "./Nigeria/out_hyper" --hyperparameters_session "standard"
+# Example usage: python forecasting.py --folder_path_to_dataset "./Syria/dataset" --folder_path_to_workspace "./Syria/out_hyper/standard/out_test" --folder_path_to_hyperparameters "./Syria/out_hyper" --hyperparameters_session "standard"
 
 parser_user.add_argument('--folder_path_to_dataset', type = str, default = "./dataset", help = "The path to the folder containing the dataset (training and test points).")
 parser_user.add_argument('--folder_path_to_workspace', type = str, default = "./output_forecasting", help = "The path to the folder where all the results arising from the current analysis will be stored.")

@@ -14,7 +14,7 @@ plt.style.use("default")
 # Year: 2020
 
 class TsIP:
-    """TsIP (Time-series Interactive Plot).
+    """TsIP (Time series Interactive Plot).
     
     TsIP is a python library developed to interactively visualize multiple time-series quickly and easily. 
     The implementation of this tool responds to the need to visualize time-series stored into a pandas dataframe with
@@ -51,7 +51,7 @@ class TsIP:
         
         Parameters
         ----------
-        graph: a string parameter to set between 'Time-series' and 'Missing values'. If 'Time-series' is set, the time-series
+        graph: a string parameter to set between 'Time series' and 'Missing values'. If 'Time series' is set, the time-series
            stored into the dataframe are visualized. If 'Missing values' is set, the heatmap regarding the nan values of all
            the time-series is visualized.
            Being this function built to depend on other functions, the parameter 'graph' is to consider interactive, i.e. the 
@@ -68,7 +68,7 @@ class TsIP:
         # Visualization using Matplotlib library.
         if self.matplotlib:
             # Plot of the time-series.
-            if graph == "Time-series":
+            if graph == "Time series":
                 # Create figure.
                 fig, ax = plt.subplots(figsize = (15, 5))
                 # Set colorway of the time-series.
@@ -124,7 +124,7 @@ class TsIP:
         # Visualization using Plotly library.
         else:
             # Plot of the time-series.
-            if graph == "Time-series":
+            if graph == "Time series":
                 # Create figure.
                 fig = go.Figure(layout = go.Layout(colorway = colorway))
 
@@ -176,7 +176,7 @@ class TsIP:
         ----------
         name: the name of the sub-dataframe on level 0 to plot. This choice is dynamic thanks to an interactive button in
            the main function.
-        graph: a string parameter to set between 'Time-series' and 'Missing values'. If 'Time-series' is set, the time-series
+        graph: a string parameter to set between 'Time series' and 'Missing values'. If 'Time series' is set, the time-series
            stored into the dataframe are visualized. If 'Missing values' is set, the heatmap regarding the nan values of all
            the time-series is visualized.
            Being this function built to depend on other functions, the parameter 'graph' is to consider interactive, i.e. the 
@@ -228,7 +228,7 @@ class TsIP:
            the main function.
         name2: the name of the sub-dataframe on level 1 to plot. This choice is dynamic thanks to an interactive button in
            the main function.
-        graph: a string parameter to set between 'Time-series' and 'Missing values'. If 'Time-series' is set, the time-series
+        graph: a string parameter to set between 'Time series' and 'Missing values'. If 'Time series' is set, the time-series
            stored into the dataframe are visualized. If 'Missing values' is set, the heatmap regarding the nan values of all
            the time-series is visualized.
            Being this function built to depend on other functions, the parameter 'graph' is to consider interactive, i.e. the 
@@ -285,7 +285,7 @@ class TsIP:
            the main function.
         name3: the name of the sub-dataframe on level 2 to plot. This choice is dynamic thanks to an interactive button in 
            the main function.
-        graph: a string parameter to set between 'Time-series' and 'Missing values'. If 'Time-series' is set, the time-series
+        graph: a string parameter to set between 'Time series' and 'Missing values'. If 'Time series' is set, the time-series
            stored into the dataframe are visualized. If 'Missing values' is set, the heatmap regarding the nan values of all
            the time-series is visualized.
            Being this function built to depend on other functions, the parameter 'graph' is to consider interactive, i.e. the 
@@ -361,7 +361,7 @@ class TsIP:
         # 1 LEVEL, AXIS 1.
         if not isinstance(self.df.columns, pd.MultiIndex):
             # Create interactive figure.
-            w = widgets.RadioButtons(options = ["Time-series", "Missing values"], description = "Select:", disabled = False)
+            w = widgets.RadioButtons(options = ["Time series", "Missing values"], description = "Select:", disabled = False)
             p = interact(self.plot_df_level_1, graph = w, df = fixed(self.df), title_name = fixed(self.title), df2 = fixed(self.df2))
         else:
             # 2 LEVELS, AXIS 1.
@@ -374,11 +374,11 @@ class TsIP:
                     else:
                         df2 = None
                     # Create figure.
-                    w = widgets.RadioButtons(options = ["Time-series", "Missing values"], description = "Select:", disabled = False)
+                    w = widgets.RadioButtons(options = ["Time series", "Missing values"], description = "Select:", disabled = False)
                     p = interact(self.plot_df_level_1, graph = w, df = fixed(df), title_name = fixed(self.title), df2 = fixed(df2))
                 # Check if the dataframe has an unique feature on level 0 and multiple features on level 1.
                 elif len(self.df.columns.get_level_values(0).unique()) == 1 and len(self.df.columns.get_level_values(1).unique()) != 1:
-                    w = widgets.RadioButtons(options = ["Time-series", "Missing values"], description = "Select:", disabled = False)
+                    w = widgets.RadioButtons(options = ["Time series", "Missing values"], description = "Select:", disabled = False)
                     p = interact(self.plot_df_level_2, name = fixed(self.df.columns.get_level_values(0).unique().values[0]), graph = w, df = fixed(self.df), df2 = fixed(self.df2))
                 # Check if dataframe has multiple features both on level 0 and level 1.    
                 elif len(self.df.columns.get_level_values(0).unique()) != 1 and len(self.df.columns.get_level_values(1).unique()) != 1: 
@@ -386,7 +386,7 @@ class TsIP:
                     w1 = widgets.ToggleButtons(options = self.df.columns.get_level_values(0).unique(), 
                                                description = self.df.columns.get_level_values(0).name, 
                                                disabled = False)
-                    w2 = widgets.RadioButtons(options = ["Time-series", "Missing values"], description = "Select:", disabled = False)
+                    w2 = widgets.RadioButtons(options = ["Time series", "Missing values"], description = "Select:", disabled = False)
                     p = interact(self.plot_df_level_2, name = w1, graph = w2, df = fixed(self.df), df2 = fixed(self.df2))       
             # 3 LEVELS, AXIS 1.
             elif len(self.df.columns.levels) == 3:
@@ -401,7 +401,7 @@ class TsIP:
                     w1 = widgets.ToggleButtons(options = df.columns.get_level_values(0).unique(), 
                                                description = df.columns.get_level_values(0).name, 
                                                disabled = False)
-                    w2 = widgets.RadioButtons(options = ["Time-series", "Missing values"], description = "Select:", disabled = False)
+                    w2 = widgets.RadioButtons(options = ["Time series", "Missing values"], description = "Select:", disabled = False)
                     p = interact(self.plot_df_level_2, name = w1, graph = w2, df = fixed(df), df2 = fixed(df2))
                 else:
                     # Create figure.
@@ -415,7 +415,7 @@ class TsIP:
                             w2.options = self.df[w1.value].columns.get_level_values(0).unique()
                     w1.observe(update)
 
-                    w3 = widgets.RadioButtons(options = ["Time-series", "Missing values"], description = "Select:", disabled = False)
+                    w3 = widgets.RadioButtons(options = ["Time series", "Missing values"], description = "Select:", disabled = False)
                     hbox = widgets.HBox([w1, w2])
                     out = widgets.interactive_output(self.plot_df_level_3, {"name1": w1, "name2": w2, "graph": w3, "df": fixed(self.df), "df2": fixed(self.df2)})
                     display(hbox, w3, out)       
@@ -440,7 +440,7 @@ class TsIP:
                 
                 #w2.observe(update2)
 
-                w4 = widgets.RadioButtons(options = ["Time-series", "Missing values"], description = "Select:", disabled = False)
+                w4 = widgets.RadioButtons(options = ["Time series", "Missing values"], description = "Select:", disabled = False)
                 hbox = widgets.HBox([w1, w2, w3])
                 out = widgets.interactive_output(self.plot_df_level_4, {"name1": w1, "name2": w2, "name3": w3, "graph": w4, "df": fixed(self.df), "df2": fixed(self.df2)})
                 display(hbox, w4, out)    

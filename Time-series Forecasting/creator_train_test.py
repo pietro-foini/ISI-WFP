@@ -25,7 +25,7 @@ from NestedCV.NestedCV import NestedCV
 
 parser_user = argparse.ArgumentParser(description = "This file allows to create the training (input and output) and test (input) points for the selected countries at provincial level in order to forecast the corresponding target time-series. The points are automatically collected starting from the availability of data through the algorithm *LagsCreator*.", formatter_class = argparse.ArgumentDefaultsHelpFormatter)
 
-# Example usage: python creator_train_test.py --countries "Nigeria" --end_date "2020-11" --folder_path_to_dataset "./Nigeria/dataset" --number_of_splits 4 --gui_interface 
+# Example usage: python creator_train_test.py --countries "Burkina Faso" --end_date "2022-03" --folder_path_to_dataset "./Burkina Faso/dataset" --number_of_splits 7 --gui_interface 
 
 parser_user.add_argument('--countries', type = str, default = ["Yemen"], nargs = "+", help = "Select the countries to consider for the current analysis. N.B. If more than one country is selected, the forecasting analysis of the countries is fused together: 1) the test splitting is the same for all the countries; 2) the training phase puts into an unique 'pot' the data of all the selected countries; 3) if the validation phase is performed, the validation loss of each country are first considered independetly and then averaged together.")
 parser_user.add_argument('--end_date', type = str, default = "2020-11", help = "The end date - format YYYY-MM. The selected date represents the month that will refer to the last split (see *NestedCV* algorithm) on which forecasting will be tested.")
@@ -75,7 +75,10 @@ for country in args.countries:
     df.columns = pd.MultiIndex.from_tuples(map(lambda x: (country, x[0], x[1]), df.columns), 
                                            names = ["Country", "AdminStrata", "Indicator"])
     # Select the defined temporal range (availability data -> end of the selected month).
-    df = df.loc[:pd.to_datetime(args.end_date) + pd.offsets.MonthEnd(1)]
+    date = pd.to_datetime(args.end_date) + pd.offsets.MonthEnd(1)
+    if date.month == 2:
+        date = date + pd.offsets.Day(3)
+    df = df.loc[:date]
     # Save indicator names at provincial level.
     for province in df.columns.get_level_values("AdminStrata").unique():
         indicators.append(sorted(df[country][province].columns))

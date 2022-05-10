@@ -126,8 +126,7 @@ class gui:
         btn = tk.Button(self.canvasFrame, text = "Run", command = lambda: self.run2(timeVariable, Listboxes))
         btn.grid(row = 2, column = 0)
         # Set label.
-        lb = self.Label(self.frame, text = "N.B. If no time lag is selected, the corresponding indicator will not be taken into account as a predictor in the following analysis.", 
-                        rowno = 3, colno = 0, size = 10)
+        lb = self.Label(self.frame, text = "N.B. If no time lag is selected, the corresponding indicator will not be taken into account as a predictor in the following analysis.", rowno = 3, colno = 0, size = 10)
 
         # Scroll horizontal.
         xscroll = tk.Scrollbar(self.frame, orient = tk.HORIZONTAL)

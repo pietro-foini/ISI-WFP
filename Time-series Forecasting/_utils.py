@@ -43,9 +43,9 @@ def plot_r2_box_plot(data, ax, label1, label2, title = None, table = None, color
     x_ticks = np.arange(1, len(data) + 1)
     medianprops = dict(linestyle = "-", linewidth = 2.5)
     # Boxplot.
-    bp1 = ax.boxplot(data.xs(label1, axis = 1, level = 1), positions = x_ticks*2.0 - 0.4, sym = "", widths = 0.6, 
+    bp1 = ax.boxplot(data.xs(label1, axis = 1, level = 1).T, positions = x_ticks*2.0 - 0.4, sym = "", widths = 0.6, 
                      medianprops = medianprops)
-    bp2 = ax.boxplot(data.xs(label2, axis = 1, level = 1), positions = x_ticks*2.0 + 0.4, sym = "", widths = 0.6, 
+    bp2 = ax.boxplot(data.xs(label2, axis = 1, level = 1).T, positions = x_ticks*2.0 + 0.4, sym = "", widths = 0.6, 
                      medianprops = medianprops, manage_ticks = False)
 
     # Draw temporary lines for legend.

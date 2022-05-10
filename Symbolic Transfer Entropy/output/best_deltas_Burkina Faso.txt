@@ -1,1 +1,0 @@
-{'1 Month Anomaly Rainfalls (%)': 1.0, '3 Months Anomaly Rainfalls (%)': 1.0, 'Exchange rate': 1.0, 'Fatalities': 1.0, 'NDVI': 1.0, 'NDVI Anomaly': 1.0, 'Price cereals and tubers': 1.0, 'Rainfalls (mm)': 1.0, 'rCSI': 7.0}
