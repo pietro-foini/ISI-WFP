@@ -1,8 +1,6 @@
 # TsIP
 
-**TsIP** (**T**ime-**s**eries **I**nteractive **P**lot) is a python library developed to interactively visualize multiple time-series quickly and easily. 
-The implementation of this tool addresses the need to visualize time-series stored into a pandas dataframe with hierarchical multi-index on axis 1, taking advantage of dynamic user interaction.
-The time-series are plotted using either the *matplotlib* library or the *plotly* library (user will). For a more involving navigation within the time-series visualization, it is advice to use the plotly library rather than the matplotlib library.  
+**TsIP** (**T**ime-**s**eries **I**nteractive **P**lot) is a python library developed to interactively visualize multiple time-series quickly and easily. The implementation of this tool addresses the need to visualize time-series stored into a pandas dataframe with hierarchical multi-index on axis 1, taking advantage of dynamic user interaction. The time-series are plotted using either the *matplotlib* library or the *plotly* library (user will). For a more involving navigation within the time-series visualization, it is advice to use the plotly library rather than the matplotlib library.  
 
 ## Examples
 
@@ -52,11 +50,11 @@ Returning to visualize the time-series using the plotly library:
 
 The TsIP module has the potential to manage dataframes that can have up to 4 levels on axis 1. 
 
-Furthermore, it is also possible to compare the time-series that belong to two equal hierarchical dataframes.
+Furthermore, it is also possible to compare the time-series that belong to two equal hierarchical dataframes `df1` and `df2`:
+
+    TsIP(df1, df2).interactive_plot_df(matplotlib = False, comparison = True, style = "lines")
 
 <p align="center">
 <img src="./images_readme/comparison.png" width="800">
 </p>
-
-The package also contains a further function to plot the predictions results obtained by a time-series forecasting algorithm.
 

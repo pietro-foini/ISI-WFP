@@ -24,7 +24,7 @@ from _default import *
 
 parser_user = argparse.ArgumentParser(description = "This file allows to perform the hyperparameter tuning on the xgboost parameters (the indicator selection as optional hyperparameter tuning) over the validation data of the corresponding splits using a bayesian approach.", formatter_class = argparse.ArgumentDefaultsHelpFormatter)
 
-# Example usage: python hyperparameter_tuning.py --folder_path_to_dataset "./Nigeria/dataset" --folder_path_to_workspace "./Nigeria/out_hyper" --splits_to_consider 1 2 3 4 5 --fraction_train_set 0.8 --trial_steps 600 --gui_interface --n_jobs 6 --early_stop_hyperopt 200
+# Example usage: python hyperparameter_tuning.py --folder_path_to_dataset "./Yemen/dataset" --folder_path_to_workspace "./Yemen/out_hyper" --splits_to_consider 1 2 3 4 5 --fraction_train_set 0.8 --trial_steps 600 --gui_interface --n_jobs 6 --early_stop_hyperopt 200
 
 parser_user.add_argument('--folder_path_to_dataset', type = str, default = "./dataset", help = "The path to the folder containing the dataset (training and test points).")
 parser_user.add_argument('--folder_path_to_workspace', type = str, default = "./output_hyperparameter_tuning", help = "The path to the folder where all the results arising from the current hyperparameter tuning will be stored.")

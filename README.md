@@ -4,64 +4,36 @@ Repository for paper: ***
 
 Authors: Pietro Foini, Michele Tizzoni, Daniela Paolotti, Elisa Omodei
 
+
 ## Overview
 
-In 2019 alone, more than 135 million people across 55 countries faced crisis levels of acute food insecurity or worse, requiring urgent humanitarian and livelihood assistance. Prior to any intervention, the UN World Food Programme (WFP) undertakes an analysis of the food security situation in an area or country to determine the most appropriate operational response. This analysis includes projections, based on expert opinion, on how the situation will evolve, but no mathematical model is currently available to provide robust quantitative estimates. To fill this need, in this work we develop a machine learning model to forecast the evolution of the prevalence of people with insufficient food consumption in different geographical areas. As this socio-economic condition is affected by the evolution of contextual variables, e.g. market prices, conflicts, precipitation or vegetation, etc., we include the associated time-series in order to investigate their causal links with food insecurity. This analysis is performed using a measure that detects the amount of direct transfer of information between pairs of time-series, the Symbolic Transfer Entropy (STE).
-Next, we focus on obtaining 30-days predictions for the food insecurity time-series employing the eXtreme Gradient Boosting (XGBoost) machine learning algorithm. 
+Food insecurity, defined as the lack of physical or economic access to safe, nutritious and sufficient food, remains one of the main challenges included in the 2030 Agenda for Sustainable Development. Near real-time data on the food insecurity situation collected by international organizations such as the World Food Programme can be crucial to monitor and forecast time trends of insufficient food consumption levels in countries at risk. Here, using food consumption observations in combination with secondary data on conflict, extreme weather events and economic shocks (e.g. rise in goods' market price), we build a forecasting model based on gradient boosted regression trees to create predictions on the evolution of insufficient food consumption trends up to 30 days in to the future in 6 countries (Burkina Faso, Cameroon, Mali, Nigeria, Syria and Yemen).
 
-<p align="center">
-  <img src="./Hunger Map.png" width="700">
-</p>
-
-<p align="center">Hunger Map (live: https://hungermap.wfp.org/)</p>
 
 ## Directory structure
 
-The analyzes of the project are arranged into several folders. The *packages* folder contains some custom python modules. For good navigation within the project, we recommend that you first examine folders *Data Sources* and then *Dataset time-series*. The other folders (except the folder *packages*) are strictly dependent on the results of these two folders. In particular the recommended order for examining the remaining analyzes is as follows: *Correlation*, *Permutation Entropy*, *Symbolic Transfer Entropy* and *Time-series Forecasting*.
+The analyzes of the project are arranged into several folders. The *packages* folder contains some custom python modules. For good navigation within the project, we recommend to first examine folders *Data Sources* and then *Dataset time-series*. The other folders (except the folder *packages*) are strictly dependent on the results of these two folders. In particular the recommended order for examining the remaining analyzes is as follows: *Correlation*, *Permutation Entropy*, *Symbolic Transfer Entropy* and *Time-series Forecasting*.
+
 
 ## Install the Environment
 
 We provide a .yml file containing the necessary packages for the current project. Once you have [conda](https://docs.anaconda.com/anaconda/install/) installed, you can create an environment as follows:
 ```
 conda env create --file environment.yml 
+
 ```
-
-## Dependencies
-
-The script has been tested running Python 3.6 (Anaconda/miniconda), with the following packages installed (along with their dependencies):
-
-- `pandas==1.1.2`
-- `hyperopt==0.2.3`
-- `seaborn==0.11.1`
-- `geopandas==0.7.0`
-- `scipy==1.3.1`
-- `ipywidgets==7.5.1`
-- `dataframe_image==0.1.1`
-- `xgboost==0.90`
-- `numpy==1.15.4`
-- `matplotlib==3.1.2`
-- `plotly==4.2.1`
-- `Click==7.0`
-- `xlrd==1.2.0`
-- `descartes==1.1.0`
-- `scikit-learn==0.21.3`
-- `mapclassify==2.1.1`
-- `patsy==0.5.1`
-- `statsmodels==0.11.1`
-- `pyinform==0.2.0`
-- `imageio==2.4.1`
-- `pyarrow==1.0.0`
-- `openpyxl==2.6.2`
 
 ## License
 
 MIT
+
 
 ## How to Cite
 
 ```
 @article{***}
 ```
+
 
 ## Contact Us
 
