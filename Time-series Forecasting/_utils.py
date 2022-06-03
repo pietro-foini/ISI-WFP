@@ -38,7 +38,7 @@ def r2(y_true, y_pred):
     return (1 - (((y_true - y_pred) ** 2).sum())/(((y_true - y_true.mean()) ** 2).sum()))
 
 def plot_r2_box_plot(data, ax, label1, label2, title = None, table = None, color1 = sns.color_palette("tab10")[0], 
-                     color2 = sns.color_palette("tab10")[1]):
+                     color2 = sns.color_palette("tab10")[1], ylabel="R$^2$"):
     # Define x-ticks.
     x_ticks = np.arange(1, len(data) + 1)
     medianprops = dict(linestyle = "-", linewidth = 2.5)
@@ -55,7 +55,7 @@ def plot_r2_box_plot(data, ax, label1, label2, title = None, table = None, color
     # Set attributes of the plot.
     ax.set_title(title)
     ax.set_xlabel("Prediction horizon")
-    ax.set_ylabel("R$^2$")
+    ax.set_ylabel(ylabel)
     #ax.set_ylim([0, 1])
     ax.tick_params(labeltop = False, labelright = True)
     ax.set_xticks(ax.get_xticks() + 0.5)
