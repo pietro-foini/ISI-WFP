@@ -1,6 +1,17 @@
 # Don't track content of these folders.
 __pycache__/
+Analysis 2021/
+Analysis 2022 (more splits)/
+Analysis 2021 Yemen/
 
 # Compiled source #
 ###################
 *.ipynb_checkpoints
+
+# Notebooks
+Forecasting (model full training vs model partial training) - Analysis 2021 Yemen.ipynb
+Forecasting (naive vs model & performance) - N° provinces - Analysis 2021 Yemen.ipynb
+Forecasting (naive vs model & training points) - Length time-series - Analysis 2021 Yemen.ipynb
+Forecasting (naive vs model & training points) - Reproduce other countries - Analysis 2021 Yemen.ipynb
+
+

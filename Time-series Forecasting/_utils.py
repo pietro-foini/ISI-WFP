@@ -37,49 +37,53 @@ def r2(y_true, y_pred):
     """r2 metric according to xgboost implementation."""
     return (1 - (((y_true - y_pred) ** 2).sum())/(((y_true - y_true.mean()) ** 2).sum()))
 
-def plot_r2_box_plot(data, ax, label1, label2, title = None, table = None, color1 = sns.color_palette("tab10")[0], 
-                     color2 = sns.color_palette("tab10")[1], ylabel="R$^2$"):
-    # Define x-ticks.
-    x_ticks = np.arange(1, len(data) + 1)
-    medianprops = dict(linestyle = "-", linewidth = 2.5)
-    # Boxplot.
-    bp1 = ax.boxplot(data.xs(label1, axis = 1, level = 1).T, positions = x_ticks*2.0 - 0.4, sym = "", widths = 0.6, 
-                     medianprops = medianprops)
-    bp2 = ax.boxplot(data.xs(label2, axis = 1, level = 1).T, positions = x_ticks*2.0 + 0.4, sym = "", widths = 0.6, 
-                     medianprops = medianprops, manage_ticks = False)
+def adjust_boxplot(ax, colors=["#355269", "#5eb91e"], linewidth=1.5):
+    """Adjust boxplot layout with group of couple of boxes."""
+    for i, artist in enumerate(ax.artists):
+        if len(colors) > 1:
+            if i % 2 == 0:
+                col = colors[0]
+            else:
+                col = colors[1]   
+        else:
+            col = colors[0]
+        # This sets the color for the main box.
+        artist.set_edgecolor(col)
+        artist.set_facecolor("None")
+        # Each box has 6 associated Line2D objects (to make the whiskers, etc.).
+        # Loop over them here, and use the same colour as above.
+        for j in range(i*5,i*5+5):
+            line = ax.lines[j]
+            line.set_color(col)
+            line.set_mfc(col)
+            line.set_mec(col)
 
-    # Draw temporary lines for legend.
-    ax.plot([], c = color1, label = label1)
-    ax.plot([], c = color2, label = label2)
+    # Also fix the legend.
+    if len(colors) > 1:
+        for legpatch in ax.get_legend().get_patches(): 
+            legpatch.set_linewidth(linewidth)
+            legpatch.set_edgecolor(legpatch.get_facecolor())
+            legpatch.set_facecolor("None")
     
-    # Set attributes of the plot.
-    ax.set_title(title)
-    ax.set_xlabel("Prediction horizon")
-    ax.set_ylabel(ylabel)
-    #ax.set_ylim([0, 1])
-    ax.tick_params(labeltop = False, labelright = True)
-    ax.set_xticks(ax.get_xticks() + 0.5)
-    ax.set_xticklabels(x_ticks)  
-    ax.set_xlim([0, ax.get_xticks()[-1] + 1.8])
-    ax.legend(loc = "best")
-    
-    # Insert information table.
-    if table is not None:
-        ax.table(cellText = table.values, rowLabels = table.index, colLabels = table.columns,
-                 bbox = [0.0, -0.55, 1, .28], loc = "bottom")
-
-    def set_box_color(bp, color):
-        plt.setp(bp["boxes"], color = color)
-        plt.setp(bp["whiskers"], color = color)
-        plt.setp(bp["caps"], color = color)
-        plt.setp(bp["medians"], color = color)
-
-    # Set the colors of the boxplots.
-    set_box_color(bp1, color1) 
-    set_box_color(bp2, color2)
-
-    # Add boxplots to the axis.
-    ax = bp1
-    ax = bp2
-
     return ax
+
+def plot_prediction(df, split, country, province, ax):
+    df = df[split][country][province]
+    # Add the time-series to the figure.
+    df.columns.name = None
+    last_date = df["Forecast"].last_valid_index()
+    df = df.loc[:last_date]
+    for column in df.columns: 
+        if column == "FCG":
+            df[column].plot(ax = ax, label = "_", style = ":", c = "black", alpha = 0.5)
+        elif column == "Naive":
+            df[column].plot(ax = ax, label = "naive", style = "-", c = sns.color_palette("tab10")[0], legend = False)
+        else:
+            df[column].plot(ax = ax, label = "model", style = "-", c = sns.color_palette("tab10")[1], legend = False)
+            
+    # Set legend.
+    ax.legend(title = df.columns.name, loc = "best")
+    # Set axis names.
+    ax.set_ylabel("")
+    ax.set_xlabel("")
+    ax.autoscale()
