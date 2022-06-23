@@ -1,5 +1,6 @@
 # Don't track content of these folders.
 __pycache__/
+Symbolic Transfer Entropy/
 Analysis 2021/
 Analysis 2022 (more splits)/
 Analysis 2021 Yemen/
