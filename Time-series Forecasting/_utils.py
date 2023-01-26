@@ -77,9 +77,9 @@ def plot_prediction(df, split, country, province, ax):
         if column == "FCG":
             df[column].plot(ax = ax, label = "_", style = ":", c = "black", alpha = 0.5)
         elif column == "Naive":
-            df[column].plot(ax = ax, label = "naive", style = "-", c = sns.color_palette("tab10")[0], legend = False)
+            df[column].plot(ax = ax, label = "naive", style = "-", c = sns.color_palette("tab10")[1], legend = False)
         else:
-            df[column].plot(ax = ax, label = "model", style = "-", c = sns.color_palette("tab10")[1], legend = False)
+            df[column].plot(ax = ax, label = "model", style = "-", c = sns.color_palette("tab10")[0], legend = False)
             
     # Set legend.
     ax.legend(title = df.columns.name, loc = "best")
