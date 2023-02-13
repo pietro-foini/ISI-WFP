@@ -1,8 +1,8 @@
-# On the forecastability of food insecurity [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/pietro-foini/ISI-WFP/HEAD)
+# On the forecastability of food insecurity 
 
-Repository for paper: ***
+Repository for paper: *On the forecastability of food insecurity*
 
-Authors: Pietro Foini, Michele Tizzoni, Daniela Paolotti, Elisa Omodei
+Authors: Pietro Foini, Michele Tizzoni, Giulia Martini, Daniela Paolotti, Elisa Omodei
 
 
 ## Overview
@@ -12,7 +12,7 @@ Food insecurity, defined as the lack of physical or economic access to safe, nut
 
 ## Directory structure
 
-The analyzes of the project are arranged into several folders. The *packages* folder contains some custom python modules. For good navigation within the project, we recommend to first examine folders *Data Sources* and then *Dataset time-series*. The other folders (except the folder *packages*) are strictly dependent on the results of these two folders. In particular the recommended order for examining the remaining analyzes is as follows: *Correlation*, *Permutation Entropy*, *Symbolic Transfer Entropy* and *Time-series Forecasting*.
+The analyzes of the project are arranged into several folders. The *packages* folder contains some custom python modules. For good navigation within the project, we recommend to first examine folders *Data Sources* and then *Dataset time-series*. The other folders (except the folder *packages*) are strictly dependent on the results of these two folders. In particular the recommended order for examining the remaining analyzes is as follows: *Correlation*, *Permutation Entropy*, and *Time-series Forecasting*.
 
 
 ## Install the Environment
