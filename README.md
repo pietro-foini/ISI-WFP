@@ -31,7 +31,16 @@ MIT
 ## How to Cite
 
 ```
-@article{***}
+@article{foini2023forecastability,
+  title={On the forecastability of food insecurity},
+  author={Foini, Pietro and Tizzoni, Michele and Martini, Giulia and Paolotti, Daniela and Omodei, Elisa},
+  journal={Scientific Reports},
+  volume={13},
+  number={1},
+  pages={2793},
+  year={2023},
+  publisher={Nature Publishing Group UK London}
+}
 ```
 
 
