@@ -1,6 +1,6 @@
 # On the forecastability of food insecurity 
 
-Repository for paper: *On the forecastability of food insecurity*
+Repository for paper: [*On the forecastability of food insecurity*](https://www.nature.com/articles/s41598-023-29700-y)
 
 Authors: Pietro Foini, Michele Tizzoni, Giulia Martini, Daniela Paolotti, Elisa Omodei
 
